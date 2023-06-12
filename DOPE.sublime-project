@@ -4,11 +4,20 @@
 		{
 			"path": ".",
 		},
+		{
+			"path": "~/.config/joplin-desktop",
+			"name": "Local Joplin directory"
+		},
+		{
+			"path": "~/Dropbox/Apps/Joplin",
+			"name": "Remote Joplin directory"
+		},
 	],
 	"build_systems":
 	[
 		{
 			"name": "DOPE",
+			"shell_cmd": "${file}",
 			"variants":
 			[
 				{
@@ -16,10 +25,6 @@
 					"shell_cmd": "python3 -u \"$file\"",
 					"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 					"selector": "source.python",
-				},
-				{
-					"name": "bash: Run locally.",
-					"shell_cmd": "${file}",
 				},
 				{
 					"name": "bash: make executable",
@@ -49,12 +54,16 @@
 					"name": "Run ISORT on this file.",
 					"shell_cmd": "cd ${project_path} && isort ${file}",
 				},
+				{
+					"name": "python3: Run pytest on this file from the root directory.",
+					"shell_cmd": "cd ${project_path} && find . -name ${file_name} -exec pytest {} \\;",
+				},
 			],
 		},
 	],
 	"settings":
 	{
 		"tab_size": 4,
-		"rulers": [100, ],
+		"rulers": [100, 100.5],
 	},
 }

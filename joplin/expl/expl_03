@@ -1,0 +1,15 @@
+#!/bin/bash
+
+source common.sh
+
+echo Local directory size [MBytes]:
+du -hm $DIR_LOCAL;
+du -hm $FPATH_LOCAL_DB;
+echo
+tree $DIR_LOCAL -L 2 -ad
+echo
+
+echo Remote total size [MBytes]:
+du -hm $DIR_REMOTE;
+echo
+tree $DIR_REMOTE -L 2 -ad

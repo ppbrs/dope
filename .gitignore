@@ -1,5 +1,10 @@
+# Temporary files:
 *.pyc
+*.log
 *.sublime-workspace
 
 # Distribution files from local builds:
 dist/*
+
+# Files that remain after manually solving conflicts:
+*.orig

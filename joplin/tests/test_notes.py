@@ -3,7 +3,37 @@ import logging
 import os
 import re
 
+import pytest
+
 from joplin.common import DIR_LOCAL, JId32, JNote, JResource, validate_title
+
+from joplin.common import DIR_LOCAL, JId32, JNote, JResource, validate_title
+
+
+@pytest.mark.skip
+def test_notes_evernote_link(db_local_notes: dict[JId32, JNote],
+                             logger: logging.Logger):
+    """ Check if there are no obsolete evernote links.
+
+    Example:
+    evernote:///view/109847503/s583/085ab0a0-5f76-4763/085ab0a0-5f76-4763-b3eb-03e0fa24e35e/
+    https://www.evernote.com/shard/s583/nl/109847503/5751a4d9-f9c4-4144-b67f-13aa6c9b77c3
+    """
+    evernote_lnk_res = [
+        re.compile(r".*\(evernote:///view.*"),
+        re.compile(r".*www\.evernote\.com.*"),
+    ]
+    link_cnt = 0
+    for _, note in db_local_notes.items():
+        for line_idx, line in enumerate(note.body.split("\n")):
+            for re_ in evernote_lnk_res:
+                if re_.match(line):
+                    logger.warning("TITLE: %s, LINE %d: %s", note.title, line_idx, line)
+                    link_cnt += 1
+                    # break
+    if link_cnt > 0:
+        logger.error("Found %d evernote links", link_cnt)
+        assert False
 
 
 def test_notes_titles(db_local_notes: dict[JId32, JNote]) -> None:

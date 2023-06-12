@@ -2,12 +2,14 @@
 Paths, constants, functions, data structures
 that are common to both Joplin tests, Joplin CLI.
 """
+# pylint: disable=similarities
 
 from __future__ import annotations
 
 import re
 import sqlite3
 from dataclasses import dataclass, field
+import os
 from pathlib import PosixPath
 
 #
@@ -27,11 +29,19 @@ DIR_LOCAL_EDITED_RESOURCES = PosixPath(DIR_LOCAL / "tmp" / "edited_resources")
 # I'm not checking the existence of this directory because it's created by Joplin only
 # when a resource is opened for editing.
 
+DIR_REMOTE = PosixPath("~/Dropbox/Apps/Joplin").expanduser()
+assert DIR_LOCAL.exists() and DIR_LOCAL.is_dir()
+
+DIR_REMOTE_RESOURCES = PosixPath(DIR_REMOTE / ".resource")
+assert DIR_REMOTE_RESOURCES.exists() and DIR_REMOTE_RESOURCES.is_dir()
+
 #
 # Types
 #
 
 JId32 = str  # Contains 32 symbols 0123456789abcdef.
+
+NoteTitle = str  # Note title.
 
 
 @dataclass
@@ -40,6 +50,14 @@ class JItem:
     id32: JId32
     title: str
 
+    @classmethod
+    def check_id32(cls, id32: str) -> bool:
+        """ Check if the provided UID is valid. """
+        if len(id32) == 32:
+            return True
+        # todo: check characters
+        return False
+
 
 @dataclass
 class JNotebook(JItem):
@@ -47,12 +65,22 @@ class JNotebook(JItem):
     id32_parent: JId32 | None
     """id32 of the containing notebook or None if this is one of the root notebooks."""
 
+    def get_path(self, path: str, notebooks: dict[JId32, JNotebook]) -> str:
+        """ Prepend parent path and return it. """
+        path = os.path.join(self.title, path)
+        if self.id32_parent is None:
+            return path
+        return notebooks[self.id32_parent].get_path(path, notebooks)
+
 
 @dataclass
 class JNote(JItem):
     """All useful data of a note."""
     body: str
     id32_parent: JId32  # id32 of the containing notebook
+
+    def __repr__(self) -> str:
+        return f"JNote({self.id32}, {self.title})"
 
 
 @dataclass
@@ -139,6 +167,7 @@ def _get_inline_id32s_in_notes() -> dict[JId32, list[JNote]]:
     return id32s
 
 
+# pylint: disable-next=redefined-outer-name
 def get_db_local_used_resources() -> dict[JId32, JResource]:
     """
     Return a dictionary with resources' IDs as keys and JResource objects as values.
@@ -155,6 +184,26 @@ def get_db_local_used_resources() -> dict[JId32, JResource]:
             if id32 in id32s:
                 resources[id32].notes = list(id32s[id32])
 
+    return resources
+
+
+# pylint: disable-next=redefined-outer-name
+def get_db_local_resources_old() -> dict[JId32, JResource]:
+    """
+    Return a dictionary with notebooks's id32 as key and JResource object as value.
+    """
+    # todo: function takes too long
+    resources = {}
+    notes: list[JNote] = get_db_local_notes().values()
+    with sqlite3.connect(database=f"file:{FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
+        cur = db_conn.cursor()
+        cur.execute("SELECT id, title, mime, size FROM resources")
+        for id32, title, mime, size in cur.fetchall():
+            resources[id32] = JResource(id32=id32, title=title, mime=mime, size=size,
+                                        notes=[])
+            for note in notes:
+                if id32 in note.body:
+                    resources[id32].notes.append(note)
     return resources
 
 
