@@ -1,0 +1,36 @@
+{
+  "folders":
+  [
+    {
+      "path": ".",
+    },
+  ],
+  "build_systems":
+  [
+    {
+      "name": "DOPE",
+      "variants":
+      [
+        {
+          "name": "python3: Run locally.",
+          "shell_cmd": "python3 -u \"$file\"",
+          "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+          "selector": "source.python",
+        },
+        {
+          "name": "bash: Run locally.",
+          "shell_cmd": "${file}",
+        },
+        {
+          "name": "bash: make executable",
+          "shell_cmd": "chmod +x ${file}",
+        },
+      ],
+    },
+  ],
+  "settings":
+  {
+    "tab_size": 4,
+    "rulers": [100, ],
+  },
+}
