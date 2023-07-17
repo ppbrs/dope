@@ -23,3 +23,11 @@ def db_local_conn() -> sqlite3.Connection:
     """ Open the local database and provide a connection object. """
     with sqlite3.connect(database=f"file:{common.FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
         yield db_conn
+
+
+@pytest.fixture
+def db_local_notes() -> dict[common.JId32, common.JNote]:
+    """
+    Returns a dictionary with notes' IDs as keys and JNote objects as values.
+    """
+    return common.get_db_local_notes()
