@@ -3,7 +3,7 @@
 import os
 # Third party imports
 # Local application/library imports
-import common
+import common  # pylint: disable=import-error
 
 
 def test_notes_being_edited(db_local_notes: dict[common.JId32, common.JNote], logger):

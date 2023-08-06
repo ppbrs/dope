@@ -36,7 +36,8 @@ class JNote:
 
 def get_db_local_notes() -> dict[JId32, JNote]:
     """
-    Parses the local database and returns a dictionary with notes' IDs as keys and JNote objects as values.
+    Parses the local database and returns a dictionary
+    with notes' IDs as keys and JNote objects as values.
     """
     notes = {}
     with sqlite3.connect(database=f"file:{FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
