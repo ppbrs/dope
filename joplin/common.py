@@ -10,9 +10,15 @@ from pathlib import PosixPath
 # Local application/library imports
 import sqlite3
 
+#
+# Paths
+#
+
 DIR_LOCAL = PosixPath("~/.config/joplin-desktop/").expanduser()
+assert DIR_LOCAL.exists() and DIR_LOCAL.is_dir()
 
 FPATH_LOCAL_DB = PosixPath(DIR_LOCAL / "database.sqlite")
+assert FPATH_LOCAL_DB.exists() and FPATH_LOCAL_DB.is_file()
 
 #
 # Types
