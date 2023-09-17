@@ -33,14 +33,21 @@ JId32 = str  # Contains 32 symbols 0123456789abcdef.
 
 @dataclass
 class JItem:
-    """Base class for notes, resources."""
+    """Base class for notebooks, notes, resources."""
     id32: JId32
     title: str
 
 
 @dataclass
-class JNote(JItem):
+class JNotebook(JItem):
     """All useful data of a notebook."""
+    id32_parent: JId32 | None
+    """id32 of the containing notebook or None if this is one of the root notebooks."""
+
+
+@dataclass
+class JNote(JItem):
+    """All useful data of a note."""
     body: str
     id32_parent: JId32  # id32 of the containing notebook
 
@@ -81,6 +88,21 @@ def get_db_local_notes() -> dict[JId32, JNote]:
     return notes
 
 
+def get_db_local_notebooks() -> dict[JId32, JNotebook]:
+    """
+    Returns a dictionary with notebooks's id32 as key and JNotebook object as value.
+    """
+    notebooks = {}
+    with sqlite3.connect(database=f"file:{FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
+        cur = db_conn.cursor()
+        cur.execute("SELECT id, title, parent_id FROM folders")
+        for id32, title, id32_parent in cur.fetchall():
+            if not id32_parent:
+                id32_parent = None
+            notebooks[id32] = JNotebook(id32=id32, title=title, id32_parent=id32_parent)
+    return notebooks
+
+
 def _get_inline_id32s_in_notes() -> dict[JId32, list[JNote]]:
     """
     Find all "(:/id32)" in all notes.
@@ -119,3 +141,47 @@ def get_db_local_used_resources() -> dict[JId32, JResource]:
                 resources[id32].notes = list(id32s[id32])
 
     return resources
+
+
+def validate_title(title: str) -> None:
+    """
+    Check the title of a note or a notebook.
+    """
+    # Prohibited patterns and reasons why they are prohibited:
+    prohibited_patterns: list[tuple[re.Pattern, str]] = [
+        # Heading, trailing and multiple spaces:
+        (re.compile(r".*\s{2,}.*"), "Multiple spaces."),
+        (re.compile(r"^\s.*"), "Heading space."),
+        (re.compile(r".*\s$"), "Trailing space."),
+
+        # Slashes are generally forbidden because titles are intended to be used as file names:
+        (re.compile(r".*/.*"), "Slash."),
+        (re.compile(r".*\\.*"), "Backslash."),
+
+        # Heading special symbols.
+        (re.compile(r"^\#.*"), "Heading special symbol."),
+        (re.compile(r"^\@.*"), "Heading special symbol."),
+        (re.compile(r"^\$.*"), "Heading special symbol."),
+        (re.compile(r"^\~.*"), "Heading special symbol."),
+        (re.compile(r"^\`.*"), "Heading special symbol."),
+        (re.compile(r"^\%.*"), "Heading special symbol."),
+        (re.compile(r"^\^.*"), "Heading special symbol."),
+        (re.compile(r"^\&.*"), "Heading special symbol."),
+
+        # Titles for tasks are normally 4 digits, then a colon, then a space
+        (re.compile(r"^\d\d\d\d^:.*"), "No colon after the index."),
+        (re.compile(r"\d{1,3}\D*"), "1, 2,or 3 heading digits."),
+        (re.compile(r"\d{5,}\D*"), "1, 2,or 3 heading digits."),
+    ]
+
+    for pattern, reason in prohibited_patterns:
+        if pattern.fullmatch(title) is not None:
+            assert pattern.fullmatch(title) is None, \
+                f"Title check failed: {reason} Title: `{title}`."
+
+    # Make sure that there are no 0-31 (ASCII control characters).
+    # While it is legal under Linux/Unix file systems to create files
+    # with control characters in the filename, it might be a nightmare
+    # for the users to deal with such files.
+    for char in title:
+        assert ord(char) >= 32, f"ASCII control character in the title: `{title}`."

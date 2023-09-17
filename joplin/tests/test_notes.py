@@ -6,6 +6,14 @@ import os
 import common  # pylint: disable=import-error
 
 
+def test_notes_titles(db_local_notes: dict[common.JId32, common.JNote]):
+    """
+    Test titles of all notes for validity.
+    """
+    for title in [note.title for note in db_local_notes.values()]:
+        common.validate_title(title)
+
+
 def test_notes_being_edited(db_local_notes: dict[common.JId32, common.JNote], logger):
     """ Check if there aren't any notes that are being edited at the moment.
 

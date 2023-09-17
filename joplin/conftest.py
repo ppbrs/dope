@@ -31,3 +31,11 @@ def db_local_notes() -> dict[common.JId32, common.JNote]:
     Returns a dictionary with notes' IDs as keys and JNote objects as values.
     """
     return common.get_db_local_notes()
+
+
+@pytest.fixture
+def db_local_notebooks() -> dict[common.JId32, common.JNotebook]:
+    """
+    Returns a dictionary with notebooks's id32 as key and Notebook object as value.
+    """
+    return common.get_db_local_notebooks()
