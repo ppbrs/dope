@@ -4,7 +4,8 @@ that are common to both Joplin tests, Joplin CLI.
 """
 
 # Standard library imports
-from dataclasses import dataclass
+from __future__ import annotations
+from dataclasses import dataclass, field
 from pathlib import PosixPath
 import re
 # Third party imports
@@ -33,7 +34,7 @@ JId32 = str  # Contains 32 symbols 0123456789abcdef.
 
 @dataclass
 class JItem:
-    """Base class for notebooks, notes, resources."""
+    """Base class for notebooks, notes, resources, tags."""
     id32: JId32
     title: str
 
@@ -50,6 +51,13 @@ class JNote(JItem):
     """All useful data of a note."""
     body: str
     id32_parent: JId32  # id32 of the containing notebook
+
+
+@dataclass
+class JTag(JItem):
+    """All useful data of a tag."""
+    notes: list[JNote] = field(default_factory=lambda: [])
+    id32_parent: JTag | None = field(default_factory=lambda: None)
 
 
 @dataclass
@@ -143,7 +151,29 @@ def get_db_local_used_resources() -> dict[JId32, JResource]:
     return resources
 
 
-def validate_title(title: str) -> None:
+def get_db_local_tags() -> dict[JId32, JTag]:
+    """
+    Return a dictionary with tags's IDs as keys and JTag objects as values.
+    The information is taken from the local database.
+    """
+    tags: dict[JId32, JTag] = {}
+    notes: dict[JId32, JNote] = get_db_local_notes()
+    with sqlite3.connect(database=f"file:{FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
+        cur = db_conn.cursor()
+        cur.execute("SELECT id, title, parent_id FROM tags")
+        for id32, title, id32_parent in cur.fetchall():
+            tags[id32] = JTag(id32=id32, title=title)
+            if id32_parent != "":
+                raise NotImplementedError
+        cur.execute("SELECT note_id, tag_id FROM note_tags")
+        for note_id32, tag_id32 in cur.fetchall():
+            assert tag_id32 in tags
+            if note_id32 in notes:
+                tags[tag_id32].notes.append(notes[note_id32])
+    return tags
+
+
+def validate_title(title: str, tag: bool = False) -> None:
     """
     Check the title of a note or a notebook.
     """
@@ -159,20 +189,23 @@ def validate_title(title: str) -> None:
         (re.compile(r".*\\.*"), "Backslash."),
 
         # Heading special symbols.
-        (re.compile(r"^\#.*"), "Heading special symbol."),
-        (re.compile(r"^\@.*"), "Heading special symbol."),
-        (re.compile(r"^\$.*"), "Heading special symbol."),
         (re.compile(r"^\~.*"), "Heading special symbol."),
         (re.compile(r"^\`.*"), "Heading special symbol."),
         (re.compile(r"^\%.*"), "Heading special symbol."),
         (re.compile(r"^\^.*"), "Heading special symbol."),
-        (re.compile(r"^\&.*"), "Heading special symbol."),
 
         # Titles for tasks are normally 4 digits, then a colon, then a space
         (re.compile(r"^\d\d\d\d^:.*"), "No colon after the index."),
         (re.compile(r"\d{1,3}\D*"), "1, 2,or 3 heading digits."),
         (re.compile(r"\d{5,}\D*"), "1, 2,or 3 heading digits."),
     ]
+    if not tag:
+        prohibited_patterns += [
+            (re.compile(r"^\#.*"), "Heading special symbol."),
+            (re.compile(r"^\@.*"), "Heading special symbol."),
+            (re.compile(r"^\$.*"), "Heading special symbol."),
+            (re.compile(r"^\&.*"), "Heading special symbol."),
+        ]
 
     for pattern, reason in prohibited_patterns:
         if pattern.fullmatch(title) is not None:
