@@ -60,6 +60,11 @@ class JTag(JItem):
     id32_parent: JTag | None = field(default_factory=lambda: None)
 
 
+TAG_WAIT = "$w8"
+TAG_NEXT = "$nxt"
+TAG_NOW = "$now"
+
+
 @dataclass
 class JResource(JItem):
     """All useful data of a notebook."""
