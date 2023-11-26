@@ -2,6 +2,7 @@
 # Standard library imports
 import logging
 import os
+import re
 # Third party imports
 # Local application/library imports
 import common  # pylint: disable=import-error
@@ -32,6 +33,33 @@ def test_notes_being_edited(db_local_notes: dict[common.JId32, common.JNote], lo
             logger.error(f"Note `{title}` is being edited. It should be closed.")
             edited_notes.append(title)
     assert len(edited_notes) == 0, "Some notes are opened for external editing."
+
+
+def test_notes_links(db_local_notes: dict[common.JId32, common.JNote],
+                     db_local_used_resources: dict[common.JId32, common.JResource], logger):
+    """
+    Check that links to other notes or resources exist.
+
+    Note link example:
+    [!week 2023-15 ♥](:/c5aab03733f14748973dc7de8dd4a78f)
+    """
+    re_grp_title = r"[^\\]\[(.*)\]"
+    re_grp_id32 = r"\(:/([0-9a-f]{32})\)"
+    re_ptrn = re.compile(rf".*{re_grp_title}{re_grp_id32}.*")
+
+    cnt_lnk = 0
+    cnt_err = 0
+    for _, note in db_local_notes.items():
+        for line in note.body.split("\n"):
+            if (mtch := re_ptrn.match(line)):
+                cnt_lnk += 1
+                title_lnk, id32_lnk = mtch.groups()
+                if id32_lnk not in db_local_notes and id32_lnk not in db_local_used_resources:
+                    logger.error("Link not found: ID32=`%s`, LEGEND=`%s`, in NOTE=`%s`.",
+                                 id32_lnk, title_lnk, note.title)
+                    cnt_err += 1
+    logger.info(f"Found {cnt_lnk} links in notes.")
+    assert cnt_err == 0, f"Found {cnt_err} error(s) in links."
 
 
 def test_notes_symbols(db_local_notes: dict[common.JId32, common.JNote], logger: logging.Logger):

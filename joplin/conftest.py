@@ -42,6 +42,14 @@ def db_local_notebooks() -> dict[common.JId32, common.JNotebook]:
 
 
 @pytest.fixture
+def db_local_used_resources() -> dict[common.JId32, common.JResource]:
+    """
+    Returns a dictionary with notebooks's id32 as key and Resource object as value.
+    """
+    return common.get_db_local_used_resources()
+
+
+@pytest.fixture
 def db_local_tags() -> dict[common.JId32, common.JTag]:
     """
     Returns a dictionary with tags's id32 as key and Resource object as value.
