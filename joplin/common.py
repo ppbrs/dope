@@ -25,6 +25,10 @@ assert FPATH_LOCAL_DB.exists() and FPATH_LOCAL_DB.is_file()
 DIR_LOCAL_RESOURCES = PosixPath(DIR_LOCAL / "resources")
 assert DIR_LOCAL_RESOURCES.exists() and DIR_LOCAL_RESOURCES.is_dir()
 
+DIR_LOCAL_EDITED_RESOURCES = PosixPath(DIR_LOCAL / "tmp" / "edited_resources")
+# I'm not checking the existence of this directory because it's created by Joplin only
+# when a resource is opened for editing.
+
 #
 # Types
 #

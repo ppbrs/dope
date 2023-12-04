@@ -42,3 +42,22 @@ def test_resources_local(logger: logging.Logger):
             except StopIteration:
                 logging.warning("Resource `%s` is problematic.", res.id32)
                 raise
+
+
+def test_resources_being_edited(db_local_used_resources: dict[common.JId32, common.JResource],
+                                logger: logging.Logger):
+    """
+    Check that there are no resource files that were being edited and not closed afterwards.
+    """
+    if not common.DIR_LOCAL_EDITED_RESOURCES.exists():
+        return
+    edited_resources = []
+    for path in common.DIR_LOCAL_EDITED_RESOURCES.glob("*"):
+        for jres in db_local_used_resources.values():
+            if jres.title == path.name:
+                edited_resources.append(jres)
+                break
+    for resource in edited_resources:
+        logger.error(f"Resource is not closed: {resource}.")
+    assert len(edited_resources) == 0, \
+        "There are resources that were not closed after being edited."
