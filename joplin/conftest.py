@@ -6,7 +6,8 @@ import sqlite3
 # Third party imports
 import pytest
 # Local application/library imports
-import common
+from joplin.common import FPATH_LOCAL_DB, get_db_local_notebooks, get_db_local_notes, \
+    get_db_local_tags, get_db_local_used_resources, JId32, JNote, JNotebook, JResource, JTag
 
 
 @pytest.fixture
@@ -21,37 +22,37 @@ def logger() -> logging.Logger:
 @pytest.fixture
 def db_local_conn() -> sqlite3.Connection:
     """ Open the local database and provide a connection object. """
-    with sqlite3.connect(database=f"file:{common.FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
+    with sqlite3.connect(database=f"file:{FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
         yield db_conn
 
 
 @pytest.fixture
-def db_local_notes() -> dict[common.JId32, common.JNote]:
+def db_local_notes() -> dict[JId32, JNote]:
     """
     Returns a dictionary with notes' IDs as keys and JNote objects as values.
     """
-    return common.get_db_local_notes()
+    return get_db_local_notes()
 
 
 @pytest.fixture
-def db_local_notebooks() -> dict[common.JId32, common.JNotebook]:
+def db_local_notebooks() -> dict[JId32, JNotebook]:
     """
     Returns a dictionary with notebooks's id32 as key and Notebook object as value.
     """
-    return common.get_db_local_notebooks()
+    return get_db_local_notebooks()
 
 
 @pytest.fixture
-def db_local_used_resources() -> dict[common.JId32, common.JResource]:
+def db_local_used_resources() -> dict[JId32, JResource]:
     """
     Returns a dictionary with notebooks's id32 as key and Resource object as value.
     """
-    return common.get_db_local_used_resources()
+    return get_db_local_used_resources()
 
 
 @pytest.fixture
-def db_local_tags() -> dict[common.JId32, common.JTag]:
+def db_local_tags() -> dict[JId32, JTag]:
     """
     Returns a dictionary with tags's id32 as key and Resource object as value.
     """
-    return common.get_db_local_tags()
+    return get_db_local_tags()

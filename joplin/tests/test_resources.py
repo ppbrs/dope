@@ -5,7 +5,8 @@ import logging
 import pathlib
 # Third party imports
 # Local application/library imports
-import common
+from joplin.common import DIR_LOCAL_EDITED_RESOURCES, DIR_LOCAL_RESOURCES, \
+    get_db_local_used_resources, JId32, JResource
 
 
 def test_resources_local(logger: logging.Logger):
@@ -13,8 +14,8 @@ def test_resources_local(logger: logging.Logger):
     Check that all resources referenced in notes exist in the local directory and vice-versa.
     There shouldn't be any extra files in the local directory.
     """
-    res_dict: dict[common.JId32, common.JResource] = common.get_db_local_used_resources()
-    res_paths: list[pathlib.PosixPath] = sorted(common.DIR_LOCAL_RESOURCES.glob("*"))
+    res_dict: dict[JId32, JResource] = get_db_local_used_resources()
+    res_paths: list[pathlib.PosixPath] = sorted(DIR_LOCAL_RESOURCES.glob("*"))
 
     res_ids_loc = [path.stem for path in res_paths]
     res_ids_db = list(res_dict.keys())
@@ -33,7 +34,7 @@ def test_resources_local(logger: logging.Logger):
     if size_total_loc != size_total_db:
         for res in res_dict.values():
             try:
-                path = next(common.DIR_LOCAL_RESOURCES.glob(res.id32 + ".*"))
+                path = next(DIR_LOCAL_RESOURCES.glob(res.id32 + ".*"))
                 size_loc = path.stat().st_size
                 size_db = res.size
                 if size_loc != size_db:
@@ -44,15 +45,15 @@ def test_resources_local(logger: logging.Logger):
                 raise
 
 
-def test_resources_being_edited(db_local_used_resources: dict[common.JId32, common.JResource],
+def test_resources_being_edited(db_local_used_resources: dict[JId32, JResource],
                                 logger: logging.Logger):
     """
     Check that there are no resource files that were being edited and not closed afterwards.
     """
-    if not common.DIR_LOCAL_EDITED_RESOURCES.exists():
+    if not DIR_LOCAL_EDITED_RESOURCES.exists():
         return
     edited_resources = []
-    for path in common.DIR_LOCAL_EDITED_RESOURCES.glob("*"):
+    for path in DIR_LOCAL_EDITED_RESOURCES.glob("*"):
         for jres in db_local_used_resources.values():
             if jres.title == path.name:
                 edited_resources.append(jres)

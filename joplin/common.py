@@ -124,7 +124,7 @@ def _get_inline_id32s_in_notes() -> dict[JId32, list[JNote]]:
     """
     Find all "(:/id32)" in all notes.
     """
-    notes: list[JNote] = get_db_local_notes().values()
+    notes: list[JNote] = list(get_db_local_notes().values())
 
     id32s: dict[JId32, list[JNote]] = {}  # Dictionary of inline ID32 occurences.
     id32_ptrn = re.compile(r"([0-9abcdef]{32}).*")

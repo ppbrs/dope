@@ -2,12 +2,12 @@
 Test notebooks.
 """
 
-import common
+from joplin.common import JId32, JNotebook, validate_title
 
 
-def test_notebooks_titles(db_local_notebooks: dict[common.JId32, common.JNotebook]):
+def test_notebooks_titles(db_local_notebooks: dict[JId32, JNotebook]):
     """
     Test titles of all notebooks for validity.
     """
     for title in [note.title for note in db_local_notebooks.values()]:
-        common.validate_title(title)
+        validate_title(title)

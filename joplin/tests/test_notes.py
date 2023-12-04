@@ -5,38 +5,38 @@ import os
 import re
 # Third party imports
 # Local application/library imports
-import common  # pylint: disable=import-error
+from joplin.common import DIR_LOCAL, JId32, JNote, JResource, validate_title
 
 
-def test_notes_titles(db_local_notes: dict[common.JId32, common.JNote]):
+def test_notes_titles(db_local_notes: dict[JId32, JNote]):
     """
     Test titles of all notes for validity.
     """
     for title in [note.title for note in db_local_notes.values()]:
-        common.validate_title(title)
+        validate_title(title)
 
 
-def test_notes_being_edited(db_local_notes: dict[common.JId32, common.JNote], logger):
+def test_notes_being_edited(db_local_notes: dict[JId32, JNote], logger):
     """ Check if there aren't any notes that are being edited at the moment.
 
     Files that are being edited by external editors have names like this:
     edit-6e6598aad73a4abeb83285fabcd61e48.md
     """
-    _, _, fnames = list(os.walk(common.DIR_LOCAL))[0]
+    _, _, fnames = list(os.walk(DIR_LOCAL))[0]
     edited_notes = []
     for fname in fnames:
 
         if (fname.startswith("edit-") and fname.endswith(".md")
                 and len(fname) == (4 + 1 + 32 + 1 + 2)):
             id32 = fname[5:-3]
-            title = db_local_notes.get(id32).title
+            title = db_local_notes[id32].title
             logger.error(f"Note `{title}` is being edited. It should be closed.")
             edited_notes.append(title)
     assert len(edited_notes) == 0, "Some notes are opened for external editing."
 
 
-def test_notes_links(db_local_notes: dict[common.JId32, common.JNote],
-                     db_local_used_resources: dict[common.JId32, common.JResource], logger):
+def test_notes_links(db_local_notes: dict[JId32, JNote],
+                     db_local_used_resources: dict[JId32, JResource], logger):
     """
     Check that links to other notes or resources exist.
 
@@ -62,7 +62,7 @@ def test_notes_links(db_local_notes: dict[common.JId32, common.JNote],
     assert cnt_err == 0, f"Found {cnt_err} error(s) in links."
 
 
-def test_notes_symbols(db_local_notes: dict[common.JId32, common.JNote], logger: logging.Logger):
+def test_notes_symbols(db_local_notes: dict[JId32, JNote], logger: logging.Logger):
     """
     Check that restricted symbols are not used in note's body.
     """
