@@ -94,7 +94,7 @@ def get_db_local_notes() -> dict[JId32, JNote]:
     Parses the local database and returns a dictionary
     with notes' IDs as keys and JNote objects as values.
     """
-    notes = {}
+    notes: dict[JId32, JNote] = {}
     with sqlite3.connect(database=f"file:{FPATH_LOCAL_DB}?mode=ro", uri=True) as db_conn:
         cur = db_conn.cursor()
         cur.execute("SELECT id, title, body, parent_id FROM notes")

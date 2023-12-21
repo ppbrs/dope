@@ -31,7 +31,7 @@ def db_local_notes() -> dict[JId32, JNote]:
     """
     Returns a dictionary with notes' IDs as keys and JNote objects as values.
     """
-    return get_db_local_notes()
+    return get_db_local_notes()  # type: ignore[no-any-return]
 
 
 @pytest.fixture  # type: ignore[misc] # Untyped decorator makes function untyped
@@ -39,7 +39,7 @@ def db_local_notebooks() -> dict[JId32, JNotebook]:
     """
     Returns a dictionary with notebooks's id32 as key and Notebook object as value.
     """
-    return get_db_local_notebooks()
+    return get_db_local_notebooks()  # type: ignore[no-any-return]
 
 
 @pytest.fixture  # type: ignore[misc] # Untyped decorator makes function untyped
@@ -47,7 +47,7 @@ def db_local_used_resources() -> dict[JId32, JResource]:
     """
     Returns a dictionary with notebooks's id32 as key and Resource object as value.
     """
-    return get_db_local_used_resources()
+    return get_db_local_used_resources()  # type: ignore[no-any-return]
 
 
 @pytest.fixture  # type: ignore[misc] # Untyped decorator makes function untyped
@@ -55,4 +55,4 @@ def db_local_tags() -> dict[JId32, JTag]:
     """
     Returns a dictionary with tags's id32 as key and Resource object as value.
     """
-    return get_db_local_tags()
+    return get_db_local_tags()  # type: ignore[no-any-return]
