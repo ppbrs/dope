@@ -8,7 +8,7 @@ The module tests tags in the local database.
 from joplin.common import JId32, JTag, validate_title
 
 
-def test_tags_titles(db_local_tags: dict[JId32, JTag]):
+def test_tags_titles(db_local_tags: dict[JId32, JTag]) -> None:
     """
     Test names of all tags for validity.
     """

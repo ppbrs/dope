@@ -9,7 +9,7 @@ from joplin.common import JNote, JTag, JId32, TAG_NOW, TAG_NEXT, TAG_WAIT
 
 
 def test_gtd_wait(db_local_notes: dict[JId32, JNote],
-                  db_local_tags: dict[JId32, JTag]):
+                  db_local_tags: dict[JId32, JTag]) -> None:
     """
     Each note with the "$w8" tag must have a line containing a "@w8" mark describing what
     I am waiting for and how long should I wait.
@@ -40,7 +40,7 @@ def test_gtd_wait(db_local_notes: dict[JId32, JNote],
 
 
 def test_gtd_next(db_local_notes: dict[JId32, JNote],
-                  db_local_tags: dict[JId32, JTag]):
+                  db_local_tags: dict[JId32, JTag]) -> None:
     """
     Each note with the "$nxt" tag must have a line containing a "@nxt" mark describing
     what is my next action and what is the deadline.
@@ -72,7 +72,7 @@ def test_gtd_next(db_local_notes: dict[JId32, JNote],
 
 
 def test_gtd_now(db_local_notes: dict[JId32, JNote],
-                 db_local_tags: dict[JId32, JTag]):
+                 db_local_tags: dict[JId32, JTag]) -> None:
     """
     Each note with the "$now" tag must have a line containing a "@now" mark describing
     what I am currently doing and what is the deadline.
@@ -94,7 +94,7 @@ def test_gtd_now(db_local_notes: dict[JId32, JNote],
                 assert tagged, f"Note with @now mark not tagged with $now: \"{jnote.title}.\""
 
 
-def test_gtd_tags(db_local_tags: dict[JId32, JTag]):
+def test_gtd_tags(db_local_tags: dict[JId32, JTag]) -> None:
     """
     Check that the essential GTD tags exist.
     """
@@ -112,7 +112,7 @@ def test_gtd_tags(db_local_tags: dict[JId32, JTag]):
             f"Tag `{gtd_tag}` not found."
 
 
-def test_gtd_forbidden_marks(db_local_notes: dict[JId32, JNote]):
+def test_gtd_forbidden_marks(db_local_notes: dict[JId32, JNote]) -> None:
     """
     Check that the marks from the list are not used in notes.
     """

@@ -9,7 +9,7 @@ from joplin.common import DIR_LOCAL_EDITED_RESOURCES, DIR_LOCAL_RESOURCES, \
     get_db_local_used_resources, JId32, JResource
 
 
-def test_resources_local(logger: logging.Logger):
+def test_resources_local(logger: logging.Logger) -> None:
     """
     Check that all resources referenced in notes exist in the local directory and vice-versa.
     There shouldn't be any extra files in the local directory.
@@ -46,7 +46,7 @@ def test_resources_local(logger: logging.Logger):
 
 
 def test_resources_being_edited(db_local_used_resources: dict[JId32, JResource],
-                                logger: logging.Logger):
+                                logger: logging.Logger) -> None:
     """
     Check that there are no resource files that were being edited and not closed afterwards.
     """

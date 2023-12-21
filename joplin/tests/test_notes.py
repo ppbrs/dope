@@ -8,7 +8,7 @@ import re
 from joplin.common import DIR_LOCAL, JId32, JNote, JResource, validate_title
 
 
-def test_notes_titles(db_local_notes: dict[JId32, JNote]):
+def test_notes_titles(db_local_notes: dict[JId32, JNote]) -> None:
     """
     Test titles of all notes for validity.
     """
@@ -16,7 +16,7 @@ def test_notes_titles(db_local_notes: dict[JId32, JNote]):
         validate_title(title)
 
 
-def test_notes_being_edited(db_local_notes: dict[JId32, JNote], logger):
+def test_notes_being_edited(db_local_notes: dict[JId32, JNote], logger: logging.Logger) -> None:
     """ Check if there aren't any notes that are being edited at the moment.
 
     Files that are being edited by external editors have names like this:
@@ -36,7 +36,8 @@ def test_notes_being_edited(db_local_notes: dict[JId32, JNote], logger):
 
 
 def test_notes_links(db_local_notes: dict[JId32, JNote],
-                     db_local_used_resources: dict[JId32, JResource], logger):
+                     db_local_used_resources: dict[JId32, JResource],
+                     logger: logging.Logger) -> None:
     """
     Check that links to other notes or resources exist.
 
@@ -62,7 +63,7 @@ def test_notes_links(db_local_notes: dict[JId32, JNote],
     assert cnt_err == 0, f"Found {cnt_err} error(s) in links."
 
 
-def test_notes_symbols(db_local_notes: dict[JId32, JNote], logger: logging.Logger):
+def test_notes_symbols(db_local_notes: dict[JId32, JNote], logger: logging.Logger) -> None:
     """
     Check that restricted symbols are not used in note's body.
     """

@@ -4,7 +4,7 @@ dope_cli submodule
 import sys
 
 
-def dope_cli():
+def dope_cli() -> int:
     """
     Temporary function that does nothing.
     It's purpose is to check that dope_cli can be invoked from a terminal as "d".
