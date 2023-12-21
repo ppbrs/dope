@@ -1,10 +1,8 @@
 """ The module tests the contents of all notes in the local database."""
-# Standard library imports
 import logging
 import os
 import re
-# Third party imports
-# Local application/library imports
+
 from joplin.common import DIR_LOCAL, JId32, JNote, JResource, validate_title
 
 

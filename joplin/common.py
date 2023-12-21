@@ -3,14 +3,12 @@ Paths, constants, functions, data structures
 that are common to both Joplin tests, Joplin CLI.
 """
 
-# Standard library imports
 from __future__ import annotations
+
+import re
+import sqlite3
 from dataclasses import dataclass, field
 from pathlib import PosixPath
-import re
-# Third party imports
-# Local application/library imports
-import sqlite3
 
 #
 # Paths

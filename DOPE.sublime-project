@@ -45,6 +45,10 @@
 					"shell_cmd": "cd ${project_path} && pylama -o pylama.ini",
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
+				{
+					"name": "Run ISORT on this file.",
+					"shell_cmd": "cd ${project_path} && isort ${file}",
+				},
 			],
 		},
 	],

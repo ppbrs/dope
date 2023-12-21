@@ -2,10 +2,7 @@
 This module tests correctness of the local database againt by GTD workflow.
 GTD stands for Getting Things Done.
 """
-# Standard library imports
-# Third party imports
-# Local application/library imports
-from joplin.common import JNote, JTag, JId32, TAG_NOW, TAG_NEXT, TAG_WAIT
+from joplin.common import TAG_NEXT, TAG_NOW, TAG_WAIT, JId32, JNote, JTag
 
 
 def test_gtd_wait(db_local_notes: dict[JId32, JNote],

@@ -2,11 +2,8 @@
 Testing the local Joplin database in general.
 """
 
-# Standard library imports
 import logging
 import sqlite3
-# Third party imports
-# Local application/library imports
 
 
 def test_db_encoding(db_local_conn: sqlite3.Connection) -> None:

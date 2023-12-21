@@ -1,13 +1,13 @@
 """ This module provides fixtures for Joplin tests."""
 
-# Standard library imports
 import logging
 import sqlite3
-# Third party imports
+
 import pytest
-# Local application/library imports
-from joplin.common import FPATH_LOCAL_DB, get_db_local_notebooks, get_db_local_notes, \
-    get_db_local_tags, get_db_local_used_resources, JId32, JNote, JNotebook, JResource, JTag
+
+from joplin.common import (FPATH_LOCAL_DB, JId32, JNote, JNotebook, JResource,
+                           JTag, get_db_local_notebooks, get_db_local_notes,
+                           get_db_local_tags, get_db_local_used_resources)
 
 
 @pytest.fixture  # type: ignore[misc] # Untyped decorator makes function untyped

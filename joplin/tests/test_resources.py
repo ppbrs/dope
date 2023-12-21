@@ -1,12 +1,10 @@
 """ The module tests local and remote resource files. """
 
-# Standard library imports
 import logging
 import pathlib
-# Third party imports
-# Local application/library imports
-from joplin.common import DIR_LOCAL_EDITED_RESOURCES, DIR_LOCAL_RESOURCES, \
-    get_db_local_used_resources, JId32, JResource
+
+from joplin.common import (DIR_LOCAL_EDITED_RESOURCES, DIR_LOCAL_RESOURCES,
+                           JId32, JResource, get_db_local_used_resources)
 
 
 def test_resources_local(logger: logging.Logger) -> None:
