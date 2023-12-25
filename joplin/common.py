@@ -204,7 +204,7 @@ def validate_title(title: str, tag: bool = False) -> None:
         # Titles for tasks are normally 4 digits, then a colon, then a space
         (re.compile(r"^\d\d\d\d^:.*"), "No colon after the index."),
         (re.compile(r"\d{1,3}\D*"), "1, 2,or 3 heading digits."),
-        (re.compile(r"\d{5,}\D*"), "1, 2,or 3 heading digits."),
+        (re.compile(r"\d{5,}\D*"), "5 or more heading digits."),
     ]
     if not tag:
         prohibited_patterns += [
@@ -225,3 +225,7 @@ def validate_title(title: str, tag: bool = False) -> None:
     # for the users to deal with such files.
     for char in title:
         assert ord(char) >= 32, f"ASCII control character in the title: `{title}`."
+        char_bytes = char.encode(encoding="utf-8")
+        assert len(char_bytes) <= 3, \
+            (f"Very long unicode character ({char}, {len(char_bytes)}, {char_bytes.hex()})"
+             f"in the title: `{title}`.")

@@ -2,9 +2,6 @@
 The module tests tags in the local database.
 """
 
-# Standard library imports
-# Third party imports
-# Local application/library imports
 from joplin.common import JId32, JTag, validate_title
 
 
