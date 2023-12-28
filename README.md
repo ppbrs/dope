@@ -6,6 +6,7 @@
 # Terms
 
 * A **note** is a markdown file; UTF8 encoding is used in notes.
+* A **task** is a line in a note that contains a `#nxt`, `#w8`, or `#now` tag.
 
 # Sources of data
 
