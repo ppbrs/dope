@@ -1,0 +1,34 @@
+/*
+https://gist.github.com/habdenscrimen/be1bb1539ddac6dba71e6067e118b2cf
+
+https://www.w3schools.com/cssref/css_colors.php
+*/
+body {
+/*	--text-normal: red;*/
+
+	--default-font: monospace;
+	--font-size-normal: 0.9em;
+	--h1-size: 1.2em;
+	--h2-size: 1.2em;
+	--h3-size: 1.2em;
+}
+.cm-header.cm-header-1 {
+	color: DarkOrange;
+	font-family: monospace;
+}
+.cm-header.cm-header-2 {
+	color: Green;
+	font-family: monospace;
+}
+.cm-header.cm-header-3 {
+	color: SkyBlue;
+	font-family: monospace;
+}
+/* normal text outside of headings and code of editor */
+.cm-s-obsidian, .mod-single-child .cm-s-obsidian {
+	font-size: var(--font-size-normal);
+}
+/* normal text outside of headings and code of preview */
+.markdown-preview-view, .mod-single-child .markdown-preview-view {
+	font-size: var(--font-size-normal);
+}
