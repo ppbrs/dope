@@ -26,16 +26,6 @@
 					"shell_cmd": "chmod +x ${file}",
 				},
 				{
-					"name": "Run PYLINT on this file.",
-					"shell_cmd": "pylint --load-plugins pylint_quotes --rcfile=${project_path}/.pylintrc ${file}",
-					"file_regex": "(...*?):([0-9]*):.*",
-				},
-				{
-					"name": "Run PYLINT on whole project.",
-					"shell_cmd": "cd ${project_path} && ./run-pylint",
-					"file_regex": "(...*?):([0-9]*):.*",
-				},
-				{
 					"name": "Run PYLAMA on this file.",
 					"shell_cmd": "cd ${project_path} && pylama -o pylama.ini ${file}",
 					"file_regex": "(...*?):([0-9]*):.*",
