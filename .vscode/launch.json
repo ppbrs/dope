@@ -1,15 +1,28 @@
 {
 	"version": "0.2.0",
-	"configurations":
-	[
+	"configurations": [
 		{
-		"name": "python3: debug file",
-		"type": "python",
-		"request": "launch",
-		"program": "${file}",
-		"cwd": "${fileDirname}",
-		"console": "integratedTerminal",
-		"justMyCode": false,
-		}
+			"name": "python3: Debug this module.",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"cwd": "${fileDirname}",
+			"console": "integratedTerminal",
+			"justMyCode": false,
+		},
+		{
+			"name": "python3: Debug PYTEST.",
+			"type": "python",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"program": "/usr/local/lib/python3.10/dist-packages/pytest",
+			"args": [
+				// "--exitfirst",
+				// "--count=1",
+				// "-k test_v_links",
+			],
+			"console": "integratedTerminal",
+			"justMyCode": false,
+		},
 	]
 }

@@ -1,7 +1,6 @@
 {
 	"version": "2.0.0",
-	"tasks":
-	[
+	"tasks": [
 		{
 			"label": "python3: Run this module locally.",
 			"type": "shell",
@@ -9,6 +8,51 @@
 				"cwd": "${fileDirname}",
 			},
 			"command": "python3 -u ${file}",
+			"group": "build",
+		},
+		{
+			"label": "python3: Run PYLAMA on this module.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "pylama -o pylama.ini ${file}",
+			"group": "build",
+		},
+		{
+			"label": "python3: Run PYLAMA on whole project.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "pylama -o pylama.ini",
+			"group": "build",
+		},
+		{
+			"label": "python3: Run ISORT on this module.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "isort ${file}",
+			"group": "build",
+		},
+		{
+			"label": "python3: Run PYTEST on this module.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "pytest ${file}",
+			"group": "build",
+		},
+		{
+			"label": "python3: Run PYTEST on whole project.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "pytest",
 			"group": "build",
 		},
 	]

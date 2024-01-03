@@ -24,7 +24,7 @@
 					"shell_cmd": "chmod +x ${file}",
 				},
 				{
-					"name": "Run PYLAMA on this file.",
+					"name": "Run PYLAMA on this module.",
 					"working_dir": "${project_path}",
 					"shell_cmd": "pylama -o pylama.ini ${file}",
 					"file_regex": "(...*?):([0-9]*):.*",
@@ -36,8 +36,21 @@
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{
-					"name": "Run ISORT on this file.",
-					"shell_cmd": "cd ${project_path} && isort ${file}",
+					"name": "Run ISORT on this module.",
+					"working_dir": "${project_path}",
+					"shell_cmd": "isort ${file}",
+				},
+				{
+					"name": "Run PYTEST on this module.",
+					"working_dir": "${project_path}",
+					"shell_cmd": "pytest ${file}",
+					"file_regex": "(...*?):([0-9]*):.*",
+				},
+				{
+					"name": "Run PYTEST on whole project.",
+					"working_dir": "${project_path}",
+					"shell_cmd": "pytest",
+					"file_regex": "(...*?):([0-9]*):.*",
 				},
 			],
 		},
