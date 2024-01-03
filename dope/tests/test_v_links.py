@@ -9,6 +9,8 @@ from collections.abc import Generator
 
 import pytest
 
+from dope.v_note import VNote
+
 _logger = logging.getLogger(__name__)
 
 
@@ -32,8 +34,7 @@ def _find_md_link(note_line: str) -> Generator[tuple[str, str], None, None]:
         yield link_name, link_uri
 
 
-def _check_v_link(v_dir: pathlib.PosixPath, note_path: pathlib.PosixPath,
-                  line_idx: int, link_name: str, link_uri: str) -> None:
+def _check_v_link(v_note: VNote, line_idx: int, link_name: str, link_uri: str) -> None:
     _ = link_name  # yet unused
     if (link_uri.startswith("http") or link_uri.startswith("mailto")
             or link_uri.startswith("ssh")):
@@ -53,23 +54,24 @@ def _check_v_link(v_dir: pathlib.PosixPath, note_path: pathlib.PosixPath,
 
     if link_uri.startswith("./") or (link_uri.startswith("../")):
         # Internal relative link.
-        link_path_start = note_path.parent
+        link_path_start = v_note.note_path.parent
         link_path_end = pathlib.PosixPath(link_uri)
         link_path = link_path_start / link_path_end
         assert _exists(link_path), \
-            f"Int.rel.link does not exist. Note=`{note_path}`, line={line_idx}. URI=`{link_uri}`."
+            (f"Int.rel.link does not exist. "
+             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{link_uri}`.")
     else:
         # Internal absolute link.
-        link_path_start = v_dir
+        link_path_start = v_note.vault_dir
         link_path_end = pathlib.PosixPath(link_uri)
         link_path = link_path_start / link_path_end
         assert _exists(link_path), \
-            f"Int.abs.link does not exist. Note=`{note_path}`, line={line_idx}. URI=`{link_uri}`."
+            (f"Int.abs.link does not exist. "
+             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{link_uri}`.")
 
 
 @pytest.mark.parametrize("nonfatal", [True])  # type: ignore[misc] # allow untyped decorator
-def test_v_links(vault_notes: list[tuple[pathlib.PosixPath, pathlib.PosixPath]],
-                 nonfatal: bool) -> None:
+def test_v_links(nonfatal: bool) -> None:
     """
     Check the correctness of all links in notes.
 
@@ -85,8 +87,8 @@ def test_v_links(vault_notes: list[tuple[pathlib.PosixPath, pathlib.PosixPath]],
 
     num_errors = 0
     num_links = 0
-    for v_dir, note_path in vault_notes:
-        with open(note_path, "r", encoding="utf8") as note_fd:
+    for v_note in VNote.collect_iter(exclude_trash=True):
+        with open(v_note.note_path, "r", encoding="utf8") as note_fd:
             note_lines = note_fd.readlines()
         in_code_block = False
         for line_idx, note_line in enumerate(note_lines, start=1):
@@ -97,7 +99,7 @@ def test_v_links(vault_notes: list[tuple[pathlib.PosixPath, pathlib.PosixPath]],
                     link_uri = link_uri.strip()
                     try:
                         num_links += 1
-                        _check_v_link(v_dir=v_dir, note_path=note_path, line_idx=line_idx,
+                        _check_v_link(v_note=v_note, line_idx=line_idx,
                                       link_name=link_name, link_uri=link_uri)
                     except AssertionError as err:
                         num_errors += 1
