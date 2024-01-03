@@ -1,4 +1,4 @@
 {
-    "editor.renderWhitespace": "all", // for showing whitespaces as dots
-    "editor.multiCursorModifier": "alt", // to be able to do multiple selections with Alt+LeftClick (lubuntu: switch it off in openbox config)
+	"editor.renderWhitespace": "all", // for showing whitespaces as dots
+	"editor.multiCursorModifier": "alt", // to be able to do multiple selections with Alt+LeftClick (lubuntu: switch it off in openbox config)
 }

@@ -1,12 +1,15 @@
 {
-    "version": "2.0.0",
-    "tasks":
-    [
-        {
-            "label": "python3: run this file locally",
-            "type": "shell",
-            "command": "cd ${fileDirname} && python3 -u ${file}",
-            "group": "build",
-        },
-    ]
+	"version": "2.0.0",
+	"tasks":
+	[
+		{
+			"label": "python3: Run this module locally.",
+			"type": "shell",
+			"options": {
+				"cwd": "${fileDirname}",
+			},
+			"command": "python3 -u ${file}",
+			"group": "build",
+		},
+	]
 }

@@ -9,17 +9,15 @@
 	[
 		{
 			"name": "DOPE",
+			"shell_cmd": "${file}",
 			"variants":
 			[
 				{
-					"name": "python3: Run locally.",
+					"name": "python3: Run this module locally.",
+					"working_dir": "${project_path}",
 					"shell_cmd": "python3 -u \"$file\"",
 					"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 					"selector": "source.python",
-				},
-				{
-					"name": "bash: Run locally.",
-					"shell_cmd": "${file}",
 				},
 				{
 					"name": "bash: make executable",
@@ -27,12 +25,14 @@
 				},
 				{
 					"name": "Run PYLAMA on this file.",
-					"shell_cmd": "cd ${project_path} && pylama -o pylama.ini ${file}",
+					"working_dir": "${project_path}",
+					"shell_cmd": "pylama -o pylama.ini ${file}",
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{
 					"name": "Run PYLAMA on whole project.",
-					"shell_cmd": "cd ${project_path} && pylama -o pylama.ini",
+					"working_dir": "${project_path}",
+					"shell_cmd": "pylama -o pylama.ini",
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{
