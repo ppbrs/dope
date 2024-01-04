@@ -4,14 +4,23 @@ This module contains tests for Obsidian vaults.
 
 import logging
 import pathlib
-import re
-from collections.abc import Generator
 
 import pytest
 
+from dope.markdown_link import MarkdownLink
 from dope.v_note import VNote
 
 _logger = logging.getLogger(__name__)
+
+
+def _unquote(path: pathlib.PosixPath) -> pathlib.PosixPath:
+    """Unquote the path."""
+    path_s = str(path)
+    path_s = path_s.replace("%20", " ")
+    path_s = path_s.replace("%28", "(")
+    path_s = path_s.replace("%29", ")")
+    path_s = path_s.replace("%40", "@")
+    return pathlib.PosixPath(path_s)
 
 
 def _exists(link_path: pathlib.PosixPath) -> bool:
@@ -25,49 +34,43 @@ def _exists(link_path: pathlib.PosixPath) -> bool:
     return link_path.exists()
 
 
-def _find_md_link(note_line: str) -> Generator[tuple[str, str], None, None]:
-    """Find all markdown links in a given line."""
-    link_ptrn = re.compile(r"\[(?P<NAME>.*?)\]\((?P<URI>.*?)\)")
-    for mtch in link_ptrn.finditer(note_line):
-        link_name = mtch.groupdict()["NAME"]
-        link_uri = mtch.groupdict()["URI"].strip()
-        yield link_name, link_uri
-
-
-def _check_v_link(v_note: VNote, line_idx: int, link_name: str, link_uri: str) -> None:
-    _ = link_name  # yet unused
-    if (link_uri.startswith("http") or link_uri.startswith("mailto")
-            or link_uri.startswith("ssh")):
-        return  # External link.
-    if link_uri.startswith("evernote:"):
+def _check_v_link(v_note: VNote, line_idx: int, md_link: MarkdownLink) -> None:
+    if md_link.is_external():
+        return
+    if md_link.uri.startswith("evernote:"):
         # TODO: Remove them all.
         return  # Legacy Evernote link.
-    if link_uri.startswith("file:"):
+    if md_link.uri.startswith("file:"):
         return  # Legacy Windows link.
         # TODO: Remove them all.
-    if link_uri.startswith("broken:"):
+    if md_link.uri.startswith("broken:"):
         return  # A link that no longer valid. This can be an ex Evernote link, Windows file,
         # or a link that was corrupted during the migration from Joplin database.
     # Internal link.
-    link_uri = link_uri.split("#")[0]  # Remove heading.
-    link_uri = link_uri.split("^")[0]  # Remove block.
+    md_link.uri = md_link.decoded()
+    md_link.uri = md_link.uri.split("#")[0]  # Remove heading.
+    md_link.uri = md_link.uri.split("^")[0]  # Remove block.
 
-    if link_uri.startswith("./") or (link_uri.startswith("../")):
+    if md_link.uri.startswith("./") or (md_link.uri.startswith("../")):
         # Internal relative link.
         link_path_start = v_note.note_path.parent
-        link_path_end = pathlib.PosixPath(link_uri)
+        link_path_end = pathlib.PosixPath(md_link.uri)
         link_path = link_path_start / link_path_end
-        assert _exists(link_path), \
+        if not link_path.exists():
+            pass
+        assert link_path.exists(), \
             (f"Int.rel.link does not exist. "
-             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{link_uri}`.")
+             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
     else:
         # Internal absolute link.
         link_path_start = v_note.vault_dir
-        link_path_end = pathlib.PosixPath(link_uri)
+        link_path_end = pathlib.PosixPath(md_link.uri)
         link_path = link_path_start / link_path_end
-        assert _exists(link_path), \
+        if not link_path.exists():
+            pass
+        assert link_path.exists(), \
             (f"Int.abs.link does not exist. "
-             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{link_uri}`.")
+             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
 
 
 @pytest.mark.parametrize("nonfatal", [True])  # type: ignore[misc] # allow untyped decorator
@@ -95,12 +98,12 @@ def test_v_links(nonfatal: bool) -> None:
             if note_line.startswith("```"):
                 in_code_block = not in_code_block
             if not in_code_block:
-                for link_name, link_uri in _find_md_link(note_line):
-                    link_uri = link_uri.strip()
+                # pylint: disable-next=not-an-iterable
+                # (This looks like a false positive).
+                for md_link in MarkdownLink.collect_iter(line=note_line):
                     try:
                         num_links += 1
-                        _check_v_link(v_note=v_note, line_idx=line_idx,
-                                      link_name=link_name, link_uri=link_uri)
+                        _check_v_link(v_note=v_note, line_idx=line_idx, md_link=md_link)
                     except AssertionError as err:
                         num_errors += 1
                         _logger.error("%s: %s", err.__class__.__name__,
