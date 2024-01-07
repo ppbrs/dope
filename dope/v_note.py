@@ -39,3 +39,53 @@ class VNote:
                 if exclude_trash and ".trash" in note_path.parts:
                     continue
                 yield VNote(vault_dir, note_path)
+
+    def lines_iter(self, lazy: bool, remove_newline: bool) -> Generator[[int, str], None, None]:
+        """
+        Walk through all lines in a note except code lines.
+
+        Note that the index of the line is one-based.
+
+        The greedy, i.e. not lazy, variant closes the file before yielding, thus it should
+        be used when you want to rewrite the file while analyzing its lines.
+        """
+        in_code_block = False
+        if lazy:
+            with open(self.note_path, "r", encoding="utf8") as note_fd:
+                line_idx = 1
+                while (note_line := note_fd.readline()) != "":
+                    # f.readline() reads a single line from the file;
+                    # a newline character (\n) is left at the end of the string,
+                    # and is only omitted on the last line of the file if the file doesn’t end
+                    # in a newline. This makes the return value unambiguous; if f.readline()
+                    # returns an empty string, the end of the file has been reached,
+                    # while a blank line is represented by '\n', a string containing only
+                    # a single newline.
+                    if note_line.startswith("```"):
+                        in_code_block = not in_code_block
+                    if not in_code_block:
+                        if remove_newline:
+                            note_line = note_line.replace("\n", "").replace("\r", "")
+                        yield line_idx, note_line
+                    line_idx += 1
+
+        else:
+            with open(self.note_path, "r", encoding="utf8") as note_fd:
+                note_lines = note_fd.readlines()
+            for line_idx, note_line in enumerate(note_lines, start=1):
+                if note_line.startswith("```"):
+                    in_code_block = not in_code_block
+                if not in_code_block:
+                    if remove_newline:
+                        note_line = note_line.replace("\n", "").replace("\r", "")
+                    yield line_idx, note_line
+
+    def read(self) -> str:
+        """Read the whole note."""
+        with open(self.note_path, "r", encoding="utf8") as note_fd:
+            return note_fd.read()
+
+    def write(self, data: str) -> None:
+        """Write the whole note."""
+        with open(self.note_path, "w", encoding="utf8") as note_fd:
+            note_fd.write(data)

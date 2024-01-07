@@ -20,9 +20,11 @@ class MarkdownLink:
     """Human-readable name"""
     uri: str
     """Uniform resource identifier"""
+    uri_raw: str
 
     def __init__(self, name: str, uri: str):
         self.name = name
+        self.uri_raw = uri
         self.uri = uri.strip()
 
     @classmethod

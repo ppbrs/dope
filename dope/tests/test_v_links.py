@@ -37,15 +37,15 @@ def _exists(link_path: pathlib.PosixPath) -> bool:
 def _check_v_link(v_note: VNote, line_idx: int, md_link: MarkdownLink) -> None:
     if md_link.is_external():
         return
-    if md_link.uri.startswith("evernote:"):
-        # TODO: Remove them all.
-        return  # Legacy Evernote link.
-    if md_link.uri.startswith("file:"):
-        return  # Legacy Windows link.
-        # TODO: Remove them all.
     if md_link.uri.startswith("broken:"):
         return  # A link that no longer valid. This can be an ex Evernote link, Windows file,
         # or a link that was corrupted during the migration from Joplin database.
+    assert not md_link.uri.startswith("evernote:"), \
+        (f"Legacy Evernote link."
+         f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
+    assert not md_link.uri.startswith("file:"), \
+        (f"Legacy Windows link."
+         f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
     # Internal link.
     md_link.uri = md_link.decoded()
     md_link.uri = md_link.uri.split("#")[0]  # Remove heading.
@@ -56,8 +56,6 @@ def _check_v_link(v_note: VNote, line_idx: int, md_link: MarkdownLink) -> None:
         link_path_start = v_note.note_path.parent
         link_path_end = pathlib.PosixPath(md_link.uri)
         link_path = link_path_start / link_path_end
-        if not link_path.exists():
-            pass
         assert link_path.exists(), \
             (f"Int.rel.link does not exist. "
              f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
@@ -66,8 +64,6 @@ def _check_v_link(v_note: VNote, line_idx: int, md_link: MarkdownLink) -> None:
         link_path_start = v_note.vault_dir
         link_path_end = pathlib.PosixPath(md_link.uri)
         link_path = link_path_start / link_path_end
-        if not link_path.exists():
-            pass
         assert link_path.exists(), \
             (f"Int.abs.link does not exist. "
              f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
@@ -91,25 +87,19 @@ def test_v_links(nonfatal: bool) -> None:
     num_errors = 0
     num_links = 0
     for v_note in VNote.collect_iter(exclude_trash=True):
-        with open(v_note.note_path, "r", encoding="utf8") as note_fd:
-            note_lines = note_fd.readlines()
-        in_code_block = False
-        for line_idx, note_line in enumerate(note_lines, start=1):
-            if note_line.startswith("```"):
-                in_code_block = not in_code_block
-            if not in_code_block:
-                # pylint: disable-next=not-an-iterable
-                # (This looks like a false positive).
-                for md_link in MarkdownLink.collect_iter(line=note_line):
-                    try:
-                        num_links += 1
-                        _check_v_link(v_note=v_note, line_idx=line_idx, md_link=md_link)
-                    except AssertionError as err:
-                        num_errors += 1
-                        _logger.error("%s: %s", err.__class__.__name__,
-                                      str(err).split("\n", maxsplit=1)[0])
-                        if not nonfatal:
-                            raise
+        for line_idx, note_line in v_note.lines_iter(lazy=True, remove_newline=True):
+            # pylint: disable-next=not-an-iterable
+            # (This looks like a false positive).
+            for md_link in MarkdownLink.collect_iter(line=note_line):
+                try:
+                    num_links += 1
+                    _check_v_link(v_note=v_note, line_idx=line_idx, md_link=md_link)
+                except AssertionError as err:
+                    num_errors += 1
+                    _logger.error("%s: %s", err.__class__.__name__,
+                                  str(err).split("\n", maxsplit=1)[0])
+                    if not nonfatal:
+                        raise
 
     _logger.info("%d links were found and checked", num_links)
     if num_errors:
