@@ -24,7 +24,14 @@ def parse_args() -> dict[str, Any]:
     prsr.add_argument("-t", dest="tasks_all",
                       action="store_true",
                       help="Show all tasks.")
-    prsr.add_argument("-v", "--vault", dest="vault", nargs=1,
-                      action="store", help="Vault filter.")
+    prsr.add_argument("-v", "--vault", dest="vault",
+                      nargs=1,
+                      action="store",
+                      help="Vault filter.")
+    prsr.add_argument("-p", "--priorities", dest="priorities",
+                      nargs="+", default=["123"],
+                      action="store",
+                      help=("List of priorities (1=urgent/very important, 2=moderate importance, "
+                            "3=not important). \"12\" means both \"1\" and \"2\'."))
 
     return prsr.parse_args().__dict__

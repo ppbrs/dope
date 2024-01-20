@@ -34,6 +34,9 @@ class DopeCliTaskTracker:
         tasks = self._filter_by_vault(tasks=tasks, args=args)
         _logger.debug("Filtered %d tasks by vault.", len(tasks))
 
+        tasks = self._filter_by_priority(tasks=tasks, args=args)
+        _logger.debug("Filtered %d tasks by priority.", len(tasks))
+
         # Sort them.
         def sort_func(task: Task) -> tuple[int, int, int]:
             return (
@@ -71,6 +74,37 @@ class DopeCliTaskTracker:
                     tasks_flt.append(task)
         else:
             tasks_flt = tasks
+        return tasks_flt
+
+    @staticmethod
+    def _filter_by_priority(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
+        """Filter tasks by their priority."""
+        # Only 1, 2, 3, or any combination of them are accepted.
+        priorities = args["priorities"]
+        assert isinstance(priorities, list)
+        assert all(isinstance(i, str) for i in priorities)
+        priorities = set("".join(priorities))
+        try:
+            priorities = {int(i) for i in priorities}
+        except ValueError as err:
+            raise ValueError("Priorities must be integers.") from err
+        assert all(int(i) in [1, 2, 3] for i in priorities), \
+            f"At least one priority is unrecognized: {priorities=}"
+
+        tasks_flt = []
+        for task in tasks:
+            match task.priority:
+                case 1:
+                    if 1 in priorities:
+                        tasks_flt.append(task)
+                case 2:
+                    if 2 in priorities:
+                        tasks_flt.append(task)
+                case 3:
+                    if 3 in priorities:
+                        tasks_flt.append(task)
+                case _:
+                    raise ValueError(f"Unsupported priority: {task.priority}")
         return tasks_flt
 
     @staticmethod

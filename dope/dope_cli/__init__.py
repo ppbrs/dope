@@ -24,7 +24,7 @@ def dope_cli() -> int:
     os.system("clear")
 
     args = parse_args()
-    _logger.debug("Arguments: %s", args)
+    _logger.debug("Raw arguments: %s", args)
 
     ret_val: int = DopeCliTaskTracker().process(args=args)
 
