@@ -124,13 +124,14 @@ class DopeCliTaskTracker:
                 task_str = Term.underline(task_str)
             print(f"{task_str}: ", end="")
 
+            dl_str = str(task.deadline)
             days = task.get_days_to_dealine()
             if days == 0:
-                deadline_str = Term.bold(Term.green("[today]"))
+                deadline_str = Term.bold(Term.green(f"[today, {dl_str}]"))
             elif days > 0:
-                deadline_str = f"[in {days} days]"
+                deadline_str = f"[in {days} days, {dl_str}]"
             else:
-                deadline_str = Term.bold(Term.cyan(f"[{days} days ago]"))
+                deadline_str = Term.bold(Term.cyan(f"[{days} days ago, {dl_str}]"))
             print(f"{deadline_str} ", end="")
 
             note_str = Term.underline(Term.bold(task.note))
