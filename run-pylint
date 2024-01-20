@@ -1,8 +1,0 @@
-#!/bin/bash
-
-shopt -s globstar
-pylint \
-    --load-plugins pylint_quotes \
-    --rcfile=.pylintrc \
-    ./**/*.py
-echo pylint returned $?
