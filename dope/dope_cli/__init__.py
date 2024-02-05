@@ -13,7 +13,7 @@ def dope_cli() -> int:
     """Process all user requests."""
 
     fmt = "%(asctime)s.%(msecs)03d %(levelname)-8s %(funcName)s: %(message)s"
-    datefmt = "%Y%m%d:%H%M%S"
+    datefmt = "%H%M%S"
     logging.basicConfig(level=logging.DEBUG, format=fmt, datefmt=datefmt)
     _logger = logging.getLogger(__name__)
 
@@ -24,7 +24,6 @@ def dope_cli() -> int:
     os.system("clear")
 
     args = parse_args()
-    _logger.debug("Raw arguments: %s", args)
 
     ret_val: int = DopeCliTaskTracker().process(args=args)
 

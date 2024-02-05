@@ -1,7 +1,10 @@
 """Contains functionality related to parsing command line arguments."""
 
 import argparse
+import logging
 from typing import Any
+
+_logger = logging.getLogger(__name__)
 
 
 def parse_args() -> dict[str, Any]:
@@ -34,4 +37,6 @@ def parse_args() -> dict[str, Any]:
                       help=("List of priorities (1=urgent/very important, 2=moderate importance, "
                             "3=not important). \"12\" means both \"1\" and \"2\'."))
 
-    return prsr.parse_args().__dict__
+    args = prsr.parse_args().__dict__
+    _logger.info("Raw arguments: %s", args)
+    return args
