@@ -7,6 +7,7 @@ import sys
 
 from dope.dope_cli.parse_args import parse_args
 from dope.dope_cli.task_tracker import DopeCliTaskTracker
+from dope.dope_cli.vault_utils import VaultUtils
 
 
 def dope_cli() -> int:
@@ -26,5 +27,6 @@ def dope_cli() -> int:
     args = parse_args()
 
     ret_val: int = DopeCliTaskTracker().process(args=args)
+    ret_val += VaultUtils().process(args=args)
 
     return ret_val
