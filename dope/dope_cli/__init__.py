@@ -3,6 +3,7 @@ dope_cli submodule
 """
 import logging
 import os
+import pathlib
 import sys
 
 from dope.dope_cli.parse_args import parse_args
@@ -24,6 +25,7 @@ def dope_cli() -> int:
 
     os.system("clear")
 
+    _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
     args = parse_args()
 
     ret_val: int = DopeCliTaskTracker().process(args=args)

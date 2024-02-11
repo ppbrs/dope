@@ -12,3 +12,30 @@ dist/
 ├── dope-0.0.1-py3-none-any.whl
 └── dope-0.0.1.tar.gz
 ```
+
+***
+## Development flow
+
+One of the ways of testing the package during development can be using the virtual environment:
+
+1. Create it:
+`$ python3 -m venv venv`
+
+2. Activate it:
+`$ source venv/bin/activate`
+
+3. Install dope:
+`pip3 install -e .`
+
+4. Write and test new functions ...
+
+5. Uninstall dope:
+`$ pip3 uninstall dope`
+
+6. Deactivate it:
+`$ deactivate`
+
+7. Clean up:
+`rm -r venv`
+
+***

@@ -7,3 +7,6 @@ dist/*
 # Obsidian files:
 # workspace.json is being constantly rewritten and doesn't carry any useful information.
 **/.obsidian/workspace.json
+
+# Virtual environment directory:
+venv/*
