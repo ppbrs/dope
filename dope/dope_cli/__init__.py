@@ -14,21 +14,25 @@ from dope.dope_cli.vault_utils import VaultUtils
 def dope_cli() -> int:
     """Process all user requests."""
 
-    fmt = "%(asctime)s.%(msecs)03d %(levelname)-8s %(funcName)s: %(message)s"
-    datefmt = "%H%M%S"
-    logging.basicConfig(level=logging.DEBUG, format=fmt, datefmt=datefmt)
-    _logger = logging.getLogger(__name__)
+    try:
+        fmt = "%(asctime)s.%(msecs)03d %(levelname)-8s %(funcName)s: %(message)s"
+        datefmt = "%H%M%S"
+        logging.basicConfig(level=logging.DEBUG, format=fmt, datefmt=datefmt)
+        _logger = logging.getLogger(__name__)
 
-    if not sys.stdin.isatty():
-        _logger.fatal("Input doesn't come from tty.")
-        raise SystemExit
+        if not sys.stdin.isatty():
+            _logger.fatal("Input doesn't come from tty.")
+            raise SystemExit
 
-    os.system("clear")
+        os.system("clear")
 
-    _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
-    args = parse_args()
+        _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
+        args = parse_args()
 
-    ret_val: int = DopeCliTaskTracker().process(args=args)
-    ret_val += VaultUtils().process(args=args)
+        ret_val: int = DopeCliTaskTracker().process(args=args)
+        ret_val += VaultUtils().process(args=args)
 
-    return ret_val
+        return ret_val
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt")
+        return 1
