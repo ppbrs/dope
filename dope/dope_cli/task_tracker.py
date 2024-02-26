@@ -10,7 +10,7 @@ from dope.term import Term
 _logger = logging.getLogger(__name__)
 
 
-class DopeCliTaskTracker:
+class TaskTracker:
     """An object of this class collects tasks and prints them according to user requests."""
 
     # There are many private methods instead, thus creating a class is still worth it.
