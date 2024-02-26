@@ -68,11 +68,11 @@ class Task:
                     _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.",
                                   full_tag, vault, note)
 
-            yield task_cls(descr=cls._clean_line(note_line), vault=vault, note=note,
+            yield task_cls(descr=cls.clean_line(note_line), vault=vault, note=note,
                            priority=priority, deadline=deadline)
 
     @classmethod
-    def _clean_line(cls, note_line: str) -> str:
+    def clean_line(cls, note_line: str) -> str:
         """Remove useless symbols."""
         note_line = note_line.replace("\n", "")
         note_line = note_line.replace("\r", "")
