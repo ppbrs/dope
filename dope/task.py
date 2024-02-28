@@ -124,6 +124,12 @@ class Task:
         """Calculate the number of days to the deadline."""
         return (self.deadline - date.today()).days
 
+    def get_deadline_string(self) -> str:
+        """Return the deadline in the format YYYY-MM-DD-DOW."""
+        weekday_idx = self.deadline.weekday()  # Monday is 0 and Sunday is 6
+        weekday_str = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][weekday_idx]
+        return str(self.deadline) + " " + weekday_str
+
 
 class TaskNext(Task):
     """Encapsulates all information about a next action."""

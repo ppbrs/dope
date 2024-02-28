@@ -124,7 +124,7 @@ class DopeCliTaskTracker:
                 task_str = Term.underline(task_str)
             print(f"{task_str}: ", end="")
 
-            dl_str = str(task.deadline)
+            dl_str = task.get_deadline_string()
             days = task.get_days_to_dealine()
             if days == 0:
                 deadline_str = Term.bold(Term.green(f"[today, {dl_str}]"))
