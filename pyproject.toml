@@ -1,6 +1,6 @@
-# I followed this tutorial
-# https://packaging.python.org/en/latest/tutorials/packaging-projects/
-# for creating the package.
+# For creating the package, I followed these tutorials:
+# 	https://packaging.python.org/en/latest/tutorials/packaging-projects/
+# 	https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 
 [project]
 name = "dope"
@@ -13,6 +13,7 @@ authors = [
 	{name="ppbrs", email="prishchepenko.boris@gmail.com"},
 ]
 requires-python = ">=3.10"
+dependencies = []
 
 # For a complete list of classifiers, see https://pypi.org/classifiers/.
 classifiers = [
@@ -21,9 +22,20 @@ classifiers = [
 	"Operating System :: OS Independent",
 ]
 
+# After installing the project, a `d` command will be available.
+# Executing it will do the equivalent of `from dope import dope_cli; dope_cli()`.
 [project.scripts]
 d = "dope:dope_cli"
 
+# [build-system] declares which build backend to use - a library that takes a source tree
+# and builds a source distribution (*.tar.gz) or wheel (*.whl) from it.
+# Examples:
+# 	hatchling (https://packaging.python.org/en/latest/key_projects/#setuptools)
+# 		https://pypi.org/project/hatchling/
+# 	setuptools (https://packaging.python.org/en/latest/key_projects/#setuptools)
+# 		https://pypi.org/project/setuptools/
+# Also [build-system] allows declaring which dependencies are needed to build the project,
+# see `requires`.
 [build-system]
 requires = ["hatchling>=1.18.0"]
 build-backend = "hatchling.build"

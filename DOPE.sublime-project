@@ -52,6 +52,11 @@
 					"shell_cmd": "pytest",
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
+				{
+					"name": "python3: Build the package.",
+					"working_dir": "${project_path}",
+					"shell_cmd": "python3 -m build",
+				},
 			],
 		},
 	],
