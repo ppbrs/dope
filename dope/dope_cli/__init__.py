@@ -32,6 +32,9 @@ def dope_cli() -> int:
         ret_val: int = TaskTracker().process(args=args)
         ret_val += VaultUtils().process(args=args)
 
+        if args["test"]:
+            os.system("pytest")
+
         return ret_val
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt")

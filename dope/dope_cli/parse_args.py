@@ -57,6 +57,11 @@ def parse_args() -> dict[str, Any]:
         action="store",
         help=("Open the vaults in IDE. Supported parameters are `code` and `subl`. "
               "If none parameters provided, all IDEs will be opened."))
+    prsr.add_argument(
+        "--test",
+        dest="test",
+        action="store_true",
+        help=("Run all tests."))
 
     args = prsr.parse_args().__dict__
     _logger.info("Raw arguments: %s", args)
