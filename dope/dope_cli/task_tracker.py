@@ -67,13 +67,13 @@ class TaskTracker:
     @staticmethod
     def _filter_by_vault(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
         """Filter tasks by vault."""
-        if args["vault"] is not None:
-            tasks_flt = []
-            for task in tasks:
-                if args["vault"][0] in task.vault:
-                    tasks_flt.append(task)
-        else:
-            tasks_flt = tasks
+        vault_filter: None | list[str] = args["vault"]
+        if vault_filter is None:
+            return tasks
+        tasks_flt = []
+        for task in tasks:
+            if any(token in task.vault for token in vault_filter):
+                tasks_flt.append(task)
         return tasks_flt
 
     @staticmethod

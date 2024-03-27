@@ -15,6 +15,8 @@ from dope.v_note import VNote
 
 _logger = logging.getLogger(__name__)
 
+# TODO: think about naming. Maybe lesson.
+
 
 @dataclass
 class Subtask:
@@ -63,7 +65,7 @@ class Subtask:
                 assert len(tag.split("/")) == 3, f"`{part}` has wrong number of components."
                 course, size, action = tag.split("/")
 
-                vault = v_note.vault_dir.stem
+                vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
                 descr = Task.clean_line(note_line.replace(part, ""))
 
@@ -89,7 +91,16 @@ class EduTracker:
         if not args["edu"]:
             return self.ret_val
 
-        subtasks = Subtask.collect()
+        subtasks: list[Subtask] = Subtask.collect()
+
+        # Filter by vault:
+        vault_filter: None | list[str] = args["vault"]
+        if vault_filter is not None:
+            filtered: list[Subtask] = []
+            for subtask in subtasks:
+                if any(token in subtask.vault for token in vault_filter):
+                    filtered.append(subtask)
+            subtasks = filtered
 
         courses = set(stsk.course for stsk in subtasks)
         _logger.debug("Courses: %s.", courses)
