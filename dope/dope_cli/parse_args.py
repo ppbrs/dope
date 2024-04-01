@@ -4,6 +4,8 @@ import argparse
 import logging
 from typing import Any
 
+from dope.paths import V_DIRS
+
 _logger = logging.getLogger(__name__)
 
 
@@ -17,9 +19,11 @@ def parse_args() -> dict[str, Any]:
     #
     prsr.add_argument("-v", "--vault",
                       dest="vault",
-                      nargs="*",  # The result is None or a list.
+                      nargs="*",  # The result is None | list[str].
                       action="store",
-                      help="Vault filter.")
+                      help=("Optional vault filter. If omitted, all vaults are used. "
+                            "If provided as a list of tokens, only those vaults are used "
+                            "whose names include these tokens."))
 
     #
     # Task related:
@@ -67,9 +71,21 @@ def parse_args() -> dict[str, Any]:
     _logger.info("Raw arguments: %s", args)
 
     # Sanity check
+    vault_filter: None | list[str] = args["vault"]
     assert (
-        args["vault"] is None
-        or (isinstance(args["vault"], list) and all(isinstance(v, str) for v in args["vault"]))
-    )
+        vault_filter is None
+        or (isinstance(vault_filter, list)
+            and len(vault_filter) > 0
+            and all(isinstance(v, str) for v in vault_filter))
+    ), (f"Error in the vault filter ({vault_filter}). "
+        "Either omit it or provide a non-empty list of tokens.")
+    if vault_filter is not None:
+        empty = True
+        vault_names = [v_dir.name for v_dir in V_DIRS]
+        for token in vault_filter:
+            if any(token in vault_name for vault_name in vault_names):
+                empty = False
+        assert not empty, (
+            f"Error in the vault filter ({vault_filter}). No such vaults found in ({vault_names}).")
 
     return args

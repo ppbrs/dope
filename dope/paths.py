@@ -24,7 +24,7 @@ J_DIR_LOCAL_EDITED_RESOURCES = PosixPath(J_DIR_LOCAL / "tmp" / "edited_resources
 # Obsidian vaults
 #
 
-V_DIRS = [
+V_DIRS: list[PosixPath] = [
     PosixPath("~/Dropbox/the-vault").expanduser(),
     PosixPath("~/projects/z").expanduser(),
     PosixPath("~/Dropbox/projects/fl").expanduser(),
