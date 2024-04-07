@@ -24,6 +24,11 @@ def parse_args() -> dict[str, Any]:
                       help=("Optional vault filter. If omitted, all vaults are used. "
                             "If provided as a list of tokens, only those vaults are used "
                             "whose names include these tokens."))
+    prsr.add_argument(
+        "-d", "--debug",
+        dest="debug",
+        action="store_true",
+        help=("Show all diagnostic messages."))
 
     #
     # Task related:

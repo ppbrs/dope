@@ -17,7 +17,7 @@ def dope_cli() -> int:
     try:
         fmt = "%(asctime)s.%(msecs)03d %(levelname)-8s %(funcName)s: %(message)s"
         datefmt = "%H%M%S"
-        logging.basicConfig(level=logging.DEBUG, format=fmt, datefmt=datefmt)
+        logging.basicConfig(level=logging.WARNING, format=fmt, datefmt=datefmt)
         _logger = logging.getLogger(__name__)
 
         if not sys.stdin.isatty():
@@ -26,8 +26,11 @@ def dope_cli() -> int:
 
         os.system("clear")
 
-        _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
         args = parse_args()
+        if args["debug"]:
+            _logger.setLevel(logging.DEBUG)
+
+        _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
 
         ret_val: int = TaskTracker().process(args=args)
         ret_val += VaultUtils().process(args=args)
