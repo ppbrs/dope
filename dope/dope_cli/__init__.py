@@ -38,7 +38,8 @@ def dope_cli() -> int:
         ret_val += VaultUtils().process(args=args)
 
         if args["test"]:
-            os.system("pytest")
+            dope_root_dir = pathlib.PosixPath(__file__).parent.parent.parent
+            os.system(f"cd {dope_root_dir} && pytest")
 
         return ret_val
     except KeyboardInterrupt:
