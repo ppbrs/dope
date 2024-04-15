@@ -30,7 +30,10 @@ class Lesson:
 
     @classmethod
     def collect(cls) -> list[Lesson]:
-        """ Find all lessons in all vaults."""
+        """ Find all lessons in all vaults.
+
+        A line of the form "... #edu/{course}/{size}/{action} {descr}" is considered a lesson.
+        """
         lessons: list[Lesson] = []
 
         num_lines = 0
@@ -56,17 +59,21 @@ class Lesson:
         if "#edu/" not in note_line:
             return
 
-        parts = note_line.split(" ")
-        for part in parts:
-            if part.startswith("#edu/"):
-                tag = part.replace("#edu/", "")
-                assert len(tag.split("/")) == 3, f"`{part}` has wrong number of components."
-                course, size, action = tag.split("/")
+        for word in note_line.split(" "):
+            if word.startswith("#edu/"):
+                tag = word
+                tag_comps = tag.split("/")
+                assert len(tag_comps) == 4, \
+                    (f"Tag `{word}` in `{v_note.note_path.name}` has wrong number of components "
+                     f"(got {len(tag_comps)}, expected 4).")
+                _, course, size, action = tag_comps
 
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
-                descr = Task.clean_line(note_line.replace(part, ""))
-
+                descr = Task.clean_line(note_line.replace(tag, ""))
+                if action not in {"nxt", "now", "w8"}:
+                    _logger.warning("Unrecognized lesson action `%s` in %s (%s/%s: %s)",
+                                    action, tag, vault, note, descr)
                 yield Lesson(vault=vault, note=note, tag=tag, descr=descr,
                              course=course, size=size, action=action)
 
@@ -91,14 +98,8 @@ class EduTracker:
 
         lessons: list[Lesson] = Lesson.collect()
 
-        # Filter by vault:
         vault_filter: None | list[str] = args["vault"]
-        if vault_filter is not None:
-            filtered: list[Lesson] = []
-            for subtask in lessons:
-                if any(token in subtask.vault for token in vault_filter):
-                    filtered.append(subtask)
-            lessons = filtered
+        lessons = self._filter_by_vault(lessons=lessons, vault_filter=vault_filter)
 
         courses = set(stsk.course for stsk in lessons)
         _logger.debug("Courses: %s.", courses)
@@ -114,7 +115,15 @@ class EduTracker:
                 actions = set(stsk.action for stsk in lessons
                               if stsk.course == course and stsk.size == size)
                 for action in sorted(actions):
-                    print(f"\t\t{action}")
+                    if action == "nxt":
+                        action_str = Term.yellow(action)
+                    elif action == "now":
+                        action_str = Term.green(action)
+                    elif action == "w8":
+                        action_str = Term.red(action)
+                    else:
+                        action_str = action
+                    print(f"\t\t{action_str}")
                     filtered = [stsk for stsk in lessons
                                 if (stsk.course == course
                                     and stsk.size == size
@@ -126,3 +135,13 @@ class EduTracker:
                         print(f"{stsk.descr}.")
 
         return self.ret_val
+
+    @staticmethod
+    def _filter_by_vault(lessons: list[Lesson], vault_filter: None | list[str]) -> list[Lesson]:
+        if vault_filter is not None:
+            filtered: list[Lesson] = []
+            for subtask in lessons:
+                if any(token in subtask.vault for token in vault_filter):
+                    filtered.append(subtask)
+            lessons = filtered
+        return lessons
