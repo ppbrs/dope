@@ -4,7 +4,7 @@
 
 [project]
 name = "dope"
-description = "Collection of tests and a CLI tool for my Joplin database and Obsidian vaults. Task tracker."
+description = "Collection of tests and a CLI tool for my Obsidian vaults. Task tracker."
 readme = "README.md"
 dynamic = [
 	"version",
