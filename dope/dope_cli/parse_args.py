@@ -17,72 +17,85 @@ def parse_args() -> dict[str, Any]:
     #
     # Common:
     #
-    prsr.add_argument("-v", "--vault",
-                      dest="vault",
-                      nargs="*",  # The result is None | list[str].
-                      action="store",
-                      help=("Optional vault filter. If omitted, all vaults are used. "
-                            "If provided as a list of tokens, only those vaults are used "
-                            "whose names include these tokens."))
     prsr.add_argument(
-        "-d", "--debug",
-        dest="debug",
+        "-v", "--vault", dest="vault",
+        nargs="*",  # The result is None | list[str].
+        action="store",
+        help=("Optional vault filter. If omitted, all vaults are used. "
+              "If provided as a list of tokens, only those vaults are used "
+              "whose names include these tokens."))
+    prsr.add_argument(
+        "-d", "--debug", dest="debug",
         action="store_true",
-        help=("Show all diagnostic messages."))
+        help="Show all diagnostic messages.")
 
     #
     # Task related:
     #
-    prsr.add_argument("--nxt",
-                      dest="tasks_next",
-                      action="store_true",
-                      help="Show next tasks.")
-    prsr.add_argument("--w8",
-                      dest="tasks_wait",
-                      action="store_true",
-                      help="Show pending tasks.")
-    prsr.add_argument("--now",
-                      dest="tasks_now",
-                      action="store_true",
-                      help="Show current tasks.")
-    prsr.add_argument("-t",
-                      dest="tasks_all",
-                      action="store_true",
-                      help="Show all tasks.")
-    prsr.add_argument("-p", "--priorities",
-                      dest="priorities",
-                      nargs="+", default=["123"],
-                      action="store",
-                      help=("List of priorities (1=urgent/very important, 2=moderate importance, "
-                            "3=not important). \"12\" means both \"1\" and \"2\'."))
+    prsr.add_argument(
+        "--nxt", dest="tasks_next",
+        action="store_true",
+        help="Show next tasks.")
+    prsr.add_argument(
+        "--w8", dest="tasks_wait",
+        action="store_true",
+        help="Show pending tasks.")
+    prsr.add_argument(
+        "--now", dest="tasks_now",
+        action="store_true",
+        help="Show current tasks.")
+    prsr.add_argument(
+        "-t", dest="tasks_all",
+        action="store_true",
+        help="Show all tasks.")
+    prsr.add_argument(
+        "-p", "--priorities", dest="priorities",
+        nargs="+", default=["123"],
+        action="store",
+        help=("List of priorities (1=urgent/very important, 2=moderate importance, "
+              "3=not important). \"12\" means both \"1\" and \"2\'."))
 
     #
     # Vaults related:
     #
     prsr.add_argument(
-        "-i", "--ide",
-        dest="ide",
+        "-i", "--ide", dest="ide",
         nargs="*",  # The result is None or a list.
         action="store",
         help=("Open the vaults in IDE. Supported parameters are `code` and `subl`. "
               "If none parameters provided, all IDEs will be opened."))
     prsr.add_argument(
-        "--test",
-        dest="test",
+        "--test", dest="test",
         action="store_true",
-        help=("Run all tests."))
+        help="Run all tests.")
 
     #
     # Education related:
     #
     prsr.add_argument(
-        "-e", "--edu",
-        dest="edu",
+        "-e", "--edu", dest="edu",
         action="store_true",
-        help=("List all education tasks: lessons and quizzes."))
+        help="List all education tasks: lessons and quizzes.")
+
+    #
+    # Pomodoro
+    #
+    prsr.add_argument(
+        "-ps", "--pomodoro-start", dest="pomodoro_start",
+        nargs=2,  # The result is either None or a list containing two strings.
+        help="Start a pomodoro timer. "
+             "Parameters are a timeout in minutes (from 1 to 180) and a name.")
+    prsr.add_argument(
+        "-pl", "--pomodoro-list", dest="pomodoro_list",
+        action="store_true",  # The result is a boolean.
+        help="List all active timers.")
+    prsr.add_argument(
+        "-pk", "--pomodoro-kill",
+        dest="pomodoro_kill",
+        nargs="?",  # The result the result is either None or a string.
+        help="Kill a timer.")
 
     args = prsr.parse_args().__dict__
-    _logger.info("Raw arguments: %s", args)
 
     # Sanity check
     vault_filter: None | list[str] = args["vault"]

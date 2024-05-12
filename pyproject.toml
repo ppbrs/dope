@@ -13,7 +13,12 @@ authors = [
 	{name="ppbrs", email="prishchepenko.boris@gmail.com"},
 ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+	"psutil >= 5.9",
+	"types-psutil >= 5.9",
+	"colorama >= 0.4",
+	"types-colorama >= 0.4",
+]
 
 # For a complete list of classifiers, see https://pypi.org/classifiers/.
 classifiers = [

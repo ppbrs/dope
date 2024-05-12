@@ -39,3 +39,13 @@ One of the ways of testing the package during development can be using the virtu
 `rm -r venv`
 
 ***
+## Using pomodoro timers
+
+There are 3 commands that can be used for managing timers:
+* `d -ps {timout in minutes} {timer name}`, for example `d -ps 15 emails`.
+* `d -pl`
+* `d -pk` {part of PID}
+
+If you want to use an exclamation mark (!) in the name of a timer, the name should use single quotes, e.g.`d -ps 20 fw!1234`.
+
+***

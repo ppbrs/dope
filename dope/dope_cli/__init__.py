@@ -8,6 +8,7 @@ import sys
 
 from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.parse_args import parse_args
+from dope.dope_cli.pomodoro import Pomodoro
 from dope.dope_cli.task_tracker import TaskTracker
 from dope.dope_cli.vault_utils import VaultUtils
 
@@ -31,11 +32,14 @@ def dope_cli() -> int:
         if args["debug"]:
             _logger.setLevel(logging.DEBUG)
 
+        _logger.info("Raw arguments: %s", args)
+
         _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
 
         ret_val: int = TaskTracker().process(args=args)
         ret_val += EduTracker().process(args=args)
         ret_val += VaultUtils().process(args=args)
+        ret_val += Pomodoro().process(args=args)
 
         if args["test"]:
             dope_root_dir = pathlib.PosixPath(__file__).parent.parent.parent
