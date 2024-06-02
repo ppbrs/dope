@@ -19,10 +19,10 @@ dist/
 One of the ways of testing the package during development can be using the virtual environment:
 
 1. Create it:
-`$ python3 -m venv venv`
+`$ python3 -m venv .venv`
 
 2. Activate it:
-`$ source venv/bin/activate`
+`$ source .venv/bin/activate`
 
 3. Install dope:
 `pip3 install -e .`
@@ -36,7 +36,7 @@ One of the ways of testing the package during development can be using the virtu
 `$ deactivate`
 
 7. Clean up:
-`rm -r venv`
+`rm -r .venv`
 
 ***
 ## Using pomodoro timers
