@@ -18,6 +18,8 @@ dependencies = [
 	"types-psutil >= 5.9",
 	"colorama >= 0.4",
 	"types-colorama >= 0.4",
+
+	"PyGObject == 3.42.2",  # requires libgirepository1.0-dev for some reason
 ]
 
 # For a complete list of classifiers, see https://pypi.org/classifiers/.
