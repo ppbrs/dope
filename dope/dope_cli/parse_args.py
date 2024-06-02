@@ -65,6 +65,12 @@ def parse_args() -> dict[str, Any]:
         help=("Open the vaults in IDE. Supported parameters are `code` and `subl`. "
               "If none parameters provided, all IDEs will be opened."))
     prsr.add_argument(
+        "-r", "--rover",
+        dest="rover",
+        choices=["dry", "wet"],  # The result is None or "dry" or "wet".
+        action="store",
+        help="Synchronize with my smartphone; parameters are `dry` or `wet`.")
+    prsr.add_argument(
         "--test", dest="test",
         action="store_true",
         help="Run all tests.")

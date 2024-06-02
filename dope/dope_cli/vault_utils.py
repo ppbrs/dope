@@ -59,7 +59,7 @@ class VaultUtils:
     # pylint: disable=too-few-public-methods
 
     @classmethod
-    def _filter_vault_dirs(cls, args: dict[str, Any]) -> list[pathlib.PosixPath]:
+    def filter_vault_dirs(cls, args: dict[str, Any]) -> list[pathlib.PosixPath]:
         """
         Parse the --vault argument and collect the requested vaults.
         """
@@ -99,7 +99,7 @@ class VaultUtils:
         _logger.info("IDEs: %s.", ", ".join(str(ide) for ide in ides))
 
         # Find out which vaults will be opened.
-        vault_dirs = cls._filter_vault_dirs(args=args)
+        vault_dirs = cls.filter_vault_dirs(args=args)
 
         # Open the vaults in the IDEs.
         for vault_dir in vault_dirs:
