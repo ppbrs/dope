@@ -34,3 +34,12 @@ def test_v_notes_titles() -> None:
                 logging.warning(
                     "%s: Symbol `%s` in `%s`.",
                     v_note.vault_dir.stem, symbol, v_note.note_path.relative_to(v_note.vault_dir))
+
+
+def test_v_notes_inbox() -> None:
+    """Check if there are unprocessed notes in inboxes."""
+    for v_note in VNote.collect_iter(exclude_trash=True):
+        vault_inbox_path = v_note.vault_dir / "_inbox"
+        if v_note.note_path.parent == vault_inbox_path:
+            logging.error(
+                "%s's inbox contains a note: `%s`.", v_note.vault_dir.stem, v_note.note_path.stem)
