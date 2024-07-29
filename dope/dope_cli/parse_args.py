@@ -4,6 +4,7 @@ import argparse
 import logging
 from typing import Any
 
+from dope.dope_cli.pomodoro import Pomodoro
 from dope.paths import V_DIRS
 
 _logger = logging.getLogger(__name__)
@@ -83,23 +84,7 @@ def parse_args() -> dict[str, Any]:
         action="store_true",
         help="List all education tasks: lessons and quizzes.")
 
-    #
-    # Pomodoro
-    #
-    prsr.add_argument(
-        "-ps", "--pomodoro-start", dest="pomodoro_start",
-        nargs=2,  # The result is either None or a list containing two strings.
-        help="Start a pomodoro timer. "
-             "Parameters are a timeout in minutes (from 1 to 180) and a name.")
-    prsr.add_argument(
-        "-pl", "--pomodoro-list", dest="pomodoro_list",
-        action="store_true",  # The result is a boolean.
-        help="List all active timers.")
-    prsr.add_argument(
-        "-pk", "--pomodoro-kill",
-        dest="pomodoro_kill",
-        nargs="?",  # The result the result is either None or a string.
-        help="Kill a timer.")
+    Pomodoro().add_arguments(parser=prsr)
 
     args = prsr.parse_args().__dict__
 

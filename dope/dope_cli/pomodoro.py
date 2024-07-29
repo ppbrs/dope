@@ -1,4 +1,5 @@
 """Handle user requests related to pomodoro-timers."""
+import argparse
 import dataclasses
 import os
 import signal
@@ -28,8 +29,10 @@ class _TimerInfo:
 class Pomodoro:
     """Manage pomodoro timers."""
 
-    # There are many private methods instead, thus creating a class is still worth it.
-    # pylint: disable=too-few-public-methods
+    TOUT_MIN_DEFAULT = 30  # Default timer timeout, in minutes.
+    TOUT_MIN_MIN = 1  # Minimal timer timeout, in minutes.
+    TOUT_MIN_MAX = 180  # Maximal timer timeout, in minutes.
+    TMR_NAME_DEFAULT = "default"  # Default timer name.
 
     def process(self, args: dict[str, Any]) -> int:
         """
@@ -48,12 +51,42 @@ class Pomodoro:
         return 0
 
     @staticmethod
+    def add_arguments(parser: argparse.ArgumentParser) -> None:
+        """
+        Add arguments to the provided argument parser.
+
+        This method is expected to run before parser.parse_args() is invoked.
+        """
+        parser.add_argument(
+            "-ps", "--pomodoro-start", dest="pomodoro_start",
+            nargs="*",  # The result is either None or a list containing two strings.
+            help="Start a pomodoro timer. "
+                 "Parameters are a timeout in minutes (from 1 to 180) and a name. "
+                 "Default timeout is 30 minutes. Default name is 'default'.")
+        parser.add_argument(
+            "-pl", "--pomodoro-list", dest="pomodoro_list",
+            action="store_true",  # The result is a boolean.
+            help="List all active timers.")
+        parser.add_argument(
+            "-pk", "--pomodoro-kill",
+            dest="pomodoro_kill",
+            nargs="?",  # The result the result is either None or a string.
+            help="Kill a timer.")
+
+    @staticmethod
     def _start(pomodoro_start: list[str]) -> None:
-        assert len(pomodoro_start) == 2  # Sanity check.
-        tout_min = int(pomodoro_start[0])
-        if tout_min < 1 or tout_min > 180 * 60:
-            raise ValueError("Timeout can be from 1 minute to 3 hours.")
-        tmr_name = pomodoro_start[1]
+        if len(pomodoro_start) == 0:
+            tout_min = Pomodoro.TOUT_MIN_DEFAULT
+            tmr_name = Pomodoro.TMR_NAME_DEFAULT
+        elif len(pomodoro_start) == 1:
+            tout_min = int(pomodoro_start[0])
+            tmr_name = Pomodoro.TMR_NAME_DEFAULT
+        else:
+            tout_min = int(pomodoro_start[0])
+            tmr_name = " ".join(pomodoro_start[1:])
+        if tout_min < Pomodoro.TOUT_MIN_MIN or tout_min > Pomodoro.TOUT_MIN_MAX:
+            raise ValueError(
+                f"Timeout is out of range [{Pomodoro.TOUT_MIN_MIN}, {Pomodoro.TOUT_MIN_MAX}].")
 
         # We don't wait for the process to finish.
         # pylint: disable-next=consider-using-with
