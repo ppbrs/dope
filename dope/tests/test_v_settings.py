@@ -77,3 +77,56 @@ def test_v_settings_hotkeys() -> None:
             assert len(hk_v_arr_filtered) > 0, f"{v_name}: `{hk.action}` is not in hotkeys.json."
             assert any(hk == hk_v for hk_v in hk_v_arr_filtered), \
                 f"{v_name}: {hk} is not in {hk_v_arr_filtered}."
+
+
+def test_v_settings_app() -> None:
+    """
+    Check that app.json contains all my preferences.
+    """
+    app_exp = {
+        #
+        # Editor settings
+        #
+        # Show line numbers:
+        "showLineNumber": True,
+        # Don't limit maximum line length:
+        "readableLineLength": False,
+        # Don't pair brackets and quotes automatically:
+        "autoPairBrackets": False,
+        # Don't pair Markdown syntax automatically (for bold, italic, etc.):
+        "autoPairMarkdown": False,
+
+        # Vim key bindings:
+        "vimMode": True,
+        #
+        # Files and links settings
+        #
+        # Deleted files are moved to Obsidian trash (.trash folder):
+        "trashOption": "local",
+        # Default location for new attachments: in subfolder "res" under current folder:
+        "attachmentFolderPath": "./res",
+        # Default location for new notes: "_inbox" folder:
+        "newFileLocation": "folder",
+        "newFileFolderPath": "_inbox",
+        # New link format: Absolute path in vault:
+        "newLinkFormat": "absolute",
+        # Automatically update internal links: Yes:
+        "alwaysUpdateLinks": True,
+        # Don't use [[Wikilinks]], generate Markdown links instead:
+        "useMarkdownLinks": True,
+
+
+    }
+
+    for vault_dir in V_DIRS:
+        v_name = vault_dir.stem
+        _logger.info("Checking %s", v_name)
+        app_path = vault_dir / ".obsidian" / "app.json"
+        assert app_path.exists() and app_path.is_file(), f"Could not find file `{app_path}`."
+        with open(app_path, "rb") as app_fp:
+            app_vault = json.load(fp=app_fp)
+        for k, v in app_exp.items():
+            assert k in app_vault, \
+                f"{v_name}: \"{k}\" is not in `app.json`."
+            assert v == app_vault[k], \
+                f"{v_name}: \"{k}\" is expected to be `{v}` but is `{app_vault[k]}`."
