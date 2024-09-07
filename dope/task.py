@@ -1,6 +1,7 @@
 """Contains Task abstraction and its subtypes."""
 from __future__ import annotations
 
+import dataclasses
 import logging
 import pathlib
 import re
@@ -23,30 +24,42 @@ class Task:
     priority: int
     deadline: date
 
-    re_obj_full_tag = re.compile(r".*(?P<full_tag>\#(nxt|w8|now).*?)(\s.*|$)")
+    re_obj_full_tag = re.compile(
+        r".*"  # Pptional symbols before the tag.
+        + r"(?P<full_tag>\#(n|x|w)\/.*?)"  # The tag itself.
+        + r"(\s.*|\:|$)")  # Either nothing, or a colon, or at least one space after the tag.
     """
-    A full tag looks like #nxt/p2/20231231.
+    A full tag looks like #x/p2/2023-12-31.
     """
-    re_obj_deadline = re.compile(r"^(?P<year>\d\d\d\d)(?P<month>\d\d)(?P<day>\d\d)$")
+    re_obj_deadline = re.compile(r"^(?P<year>\d\d\d\d)-(?P<month>\d\d)-(?P<day>\d\d)$")
 
     @classmethod
-    def _parse_line(cls, note_line: str, v_note: VNote) -> Generator[Task, None, None]:
+    def _parse_line(
+        cls, note_line: str, v_note: VNote, line_num: int
+    ) -> Generator[Task, None, None]:
         """Collect all tasks from the given line."""
         if "#" not in note_line:
             return
 
-        for mtch_full_tag in cls.re_obj_full_tag.finditer(note_line):
-            vault = v_note.vault_dir.stem
-            note = v_note.note_path.stem
+        matches = cls.re_obj_full_tag.findall(note_line)
+        if len(matches) > 1:
+            _logger.error("More than 1 task flag in a line: '%s'.", note_line)
+        elif len(matches) == 1:
+            mtch_full_tag = cls.re_obj_full_tag.match(note_line)
+            assert mtch_full_tag is not None
             full_tag = mtch_full_tag.groupdict()["full_tag"]
             note_line = note_line.replace(full_tag, "")
 
             task_cls = cls._get_task_class(full_tag)
 
+            vault = v_note.vault_dir.stem
+            note = v_note.note_path.stem
+
             # Correct errors in a tag and emit warnings here.
             tag_parts = full_tag.split("/")
-            if tag_parts[0] not in {"#nxt", "#now", "#w8"}:
-                _logger.error("Tag `%s` in `%s/%s` is corrupted.", tag_parts[0], vault, note)
+            if tag_parts[0] not in {"#n", "#x", "#w"}:
+                _logger.error(
+                    "Corrupted tag `%s`, line %d of '%s/%s'.", tag_parts[0], line_num, vault, note)
             priority = 3
             if len(tag_parts) >= 2:
                 if tag_parts[1] not in {"p1", "p2", "p3"}:
@@ -91,11 +104,11 @@ class Task:
 
     @classmethod
     def _get_task_class(cls, full_tag: str) -> type[TaskNext] | type[TaskWait] | type[TaskNow]:
-        if full_tag.startswith("#nxt"):
+        if full_tag.startswith("#x"):
             return TaskNext
-        if full_tag.startswith("#w8"):
+        if full_tag.startswith("#w"):
             return TaskWait
-        if full_tag.startswith("#now"):
+        if full_tag.startswith("#n"):
             return TaskNow
         raise RuntimeError
 
@@ -109,12 +122,14 @@ class Task:
             with open(v_note.note_path, "r", encoding="utf8") as note_fd:
                 note_lines = note_fd.readlines()
             in_code_block = False
-            for note_line in note_lines:
+            for line_num, note_line in enumerate(note_lines, start=1):
                 if note_line.startswith("```"):
                     in_code_block = not in_code_block
                 if not in_code_block:
                     num_lines += 1
-                    for task in cls._parse_line(note_line=note_line, v_note=v_note):
+                    for task in cls._parse_line(
+                        note_line=note_line, v_note=v_note, line_num=line_num
+                    ):
                         tasks.append(task)
                         _logger.info("%s", task)
         _logger.debug("Checked %d lines, collected %d tasks", num_lines, len(tasks))
@@ -142,3 +157,50 @@ class TaskWait(Task):
 
 class TaskNow(Task):
     """Encapsulates all information about a current action."""
+
+
+def test_task_parse_match_tag() -> None:
+    """Test the regular expression used to find tags belonging to tasks in notes."""
+    @dataclasses.dataclass
+    class TestCase:
+        """A test case."""
+        string: str  # A text line.
+        matches: bool  # Whether there is a tag in a line.
+        full_tag: str | None  # The tag if there is one.
+
+    test_cases = [
+        TestCase("abcd #w/p3/2020-09-09 abcd", True, "#w/p3/2020-09-09"),
+        TestCase("#w/p3/2020-09-09 abcd", True, "#w/p3/2020-09-09"),
+        TestCase("#w/p3/2020-09-09", True, "#w/p3/2020-09-09"),
+        TestCase(" #w/p3/2020-09-09", True, "#w/p3/2020-09-09"),
+
+        TestCase("abcd #x/p3/2020-09-09 abcd", True, "#x/p3/2020-09-09"),
+        TestCase("#x/p3/2020-09-09 abcd", True, "#x/p3/2020-09-09"),
+        TestCase("#x/p3/2020-09-09", True, "#x/p3/2020-09-09"),
+        TestCase(" #x/p3/2020-09-09", True, "#x/p3/2020-09-09"),
+
+        TestCase("abcd #n/p3/2020-09-09 abcd", True, "#n/p3/2020-09-09"),
+        TestCase("#n/p3/2020-09-09 abcd", True, "#n/p3/2020-09-09"),
+        TestCase("#n/p3/2020-09-09", True, "#n/p3/2020-09-09"),
+        TestCase(" #n/p3/2020-09-09", True, "#n/p3/2020-09-09"),
+
+        TestCase("abcd #n/p3/2020-09-09: abcd", True, "#n/p3/2020-09-09"),
+        TestCase("#n/p3/2020-09-09: abcd", True, "#n/p3/2020-09-09"),
+        TestCase("#n/p3/2020-09-09:", True, "#n/p3/2020-09-09"),
+        TestCase(" #n/p3/2020-09-09:", True, "#n/p3/2020-09-09"),
+
+        TestCase("#week", False, None),
+        TestCase("#now", False, None),
+        TestCase("#xyz", False, None),
+    ]
+
+    for test_case in test_cases:
+        match = Task.re_obj_full_tag.match(test_case.string)
+        if match is not None:
+            full_tag = match.groupdict()["full_tag"]
+        if test_case.matches:
+            assert match, f"Tag expected in '{test_case.string}'."
+            assert full_tag == test_case.full_tag, \
+                f"Tag expected '{test_case.full_tag}', got '{full_tag}'."
+        else:
+            assert not match, f"No tag expected in '{test_case.string}', but got '{full_tag}'."

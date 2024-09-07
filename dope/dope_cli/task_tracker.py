@@ -100,11 +100,11 @@ class TaskTracker:
         for task in tasks:
 
             if isinstance(task, TaskNext):
-                task_str = Term.yellow(f"#nxt-P{task.priority}")
+                task_str = Term.yellow(f"#X-P{task.priority}")
             elif isinstance(task, TaskNow):
-                task_str = Term.green(f"#now-P{task.priority}")
+                task_str = Term.green(f"#N-P{task.priority}")
             elif isinstance(task, TaskWait):
-                task_str = Term.red(f" #w8-P{task.priority}")
+                task_str = Term.red(f"#W-P{task.priority}")
             else:
                 raise RuntimeError(str(task))
             if task.priority == 1:

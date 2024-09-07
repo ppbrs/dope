@@ -62,6 +62,7 @@ class Lesson:
         if "#edu/" not in note_line:
             return
 
+        note_line = note_line.replace("\r", "").replace("\n", "")
         for word in note_line.split(" "):
             if word.startswith("#edu/"):
                 tag = word
@@ -74,7 +75,7 @@ class Lesson:
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
                 descr = Task.clean_line(note_line.replace(tag, ""))
-                if action not in {"nxt", "now", "w8"}:
+                if action not in {"x", "n", "w"}:
                     _logger.warning("Unrecognized lesson action `%s` in %s (%s/%s: %s)",
                                     action, tag, vault, note, descr)
                 yield Lesson(vault=vault, note=note, tag=tag, descr=descr,
@@ -116,11 +117,11 @@ class EduTracker:
                 actions = set(stsk.action for stsk in lessons
                               if stsk.course == course and stsk.size == size)
                 for action in sorted(actions):
-                    if action == "nxt":
+                    if action == "x":
                         action_str = Term.yellow(action)
-                    elif action == "now":
+                    elif action == "n":
                         action_str = Term.green(action)
-                    elif action == "w8":
+                    elif action == "w":
                         action_str = Term.red(action)
                     else:
                         action_str = action
