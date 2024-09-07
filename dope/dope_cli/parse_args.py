@@ -34,15 +34,15 @@ def parse_args() -> dict[str, Any]:
     # Task related:
     #
     prsr.add_argument(
-        "--nxt", dest="tasks_next",
+        "-x", dest="tasks_next",
         action="store_true",
         help="Show next tasks.")
     prsr.add_argument(
-        "--w8", dest="tasks_wait",
+        "-w", dest="tasks_wait",
         action="store_true",
         help="Show pending tasks.")
     prsr.add_argument(
-        "--now", dest="tasks_now",
+        "-n", dest="tasks_now",
         action="store_true",
         help="Show current tasks.")
     prsr.add_argument(

@@ -8,12 +8,12 @@ Buy some rinse aid for my dishwasher.
 ```
 2. Add a task tag on that line.
 ```
-#nxt/p3/20240105 Buy some rinse aid for my dishwasher.
+#x/p3/2024-01-05 Buy some rinse aid for my dishwasher.
 ```
 3. Use the command-line tool to browse tasks.
 ```
-$ d --nxt
-#NXT-P3 [in 3 days] Buy some rinse aid for my dishwasher.
+$ d -x
+#X-P3 [in 3 days] Buy some rinse aid for my dishwasher.
 ```
 
 ***
