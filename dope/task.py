@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import pathlib
 import re
 from collections.abc import Generator
 from dataclasses import dataclass
@@ -99,12 +100,12 @@ class Task:
         raise RuntimeError
 
     @classmethod
-    def collect(cls) -> list[Task]:
+    def collect(cls, vault_dirs: list[pathlib.PosixPath]) -> list[Task]:
         """ Find all tasks in all vaults."""
         tasks: list[Task] = []
 
         num_lines = 0
-        for v_note in VNote.collect_iter(exclude_trash=True):
+        for v_note in VNote.collect_iter(vault_dirs=vault_dirs, exclude_trash=True):
             with open(v_note.note_path, "r", encoding="utf8") as note_fd:
                 note_lines = note_fd.readlines()
             in_code_block = False

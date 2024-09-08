@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 import logging
+import pathlib
 from collections.abc import Generator
 from dataclasses import dataclass
 from pathlib import PosixPath
-
-from dope.paths import V_DIRS
 
 _logger = logging.getLogger(__name__)
 
@@ -18,22 +17,24 @@ class VNote:
     note_path: PosixPath
 
     @classmethod
-    def collect(cls, exclude_trash: bool) -> list[VNote]:
+    def collect(cls, vault_dirs: list[pathlib.PosixPath], exclude_trash: bool) -> list[VNote]:
         """
         Walk through all vaults and get all notes.
         """
         v_notes: list[VNote] = []
-        for v_note in cls.collect_iter(exclude_trash):
+        for v_note in cls.collect_iter(vault_dirs=vault_dirs, exclude_trash=exclude_trash):
             v_notes.append(v_note)
-        _logger.debug("Collected %d vault notes from %d vaults", len(v_notes), len(V_DIRS))
+        _logger.debug("Collected %d vault notes from %d vaults", len(v_notes), len(vault_dirs))
         return v_notes
 
     @classmethod
-    def collect_iter(cls, exclude_trash: bool) -> Generator[VNote, None, None]:
+    def collect_iter(
+        cls, vault_dirs: list[pathlib.PosixPath], exclude_trash: bool
+    ) -> Generator[VNote, None, None]:
         """
         Walk through all vaults and get all notes.
         """
-        for vault_dir in V_DIRS:
+        for vault_dir in vault_dirs:
             for note_path in vault_dir.rglob("*.md"):
                 assert note_path.is_file()
                 if exclude_trash and ".trash" in note_path.parts:

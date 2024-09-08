@@ -4,11 +4,14 @@ Executing user requests related to my education.
 from __future__ import annotations
 
 import logging
+import pathlib
 import random
 from collections.abc import Generator
 from dataclasses import dataclass
 from typing import Any
 
+from dope.dope_cli.vault_utils import VaultUtils
+from dope.paths import V_DIRS
 from dope.task import Task
 from dope.term import Term
 from dope.v_note import VNote
@@ -29,7 +32,7 @@ class Lesson:
     action: str
 
     @classmethod
-    def collect(cls) -> list[Lesson]:
+    def collect(cls, vault_dirs: list[pathlib.PosixPath]) -> list[Lesson]:
         """ Find all lessons in all vaults.
 
         A line of the form "... #edu/{course}/{size}/{action} {descr}" is considered a lesson.
@@ -37,7 +40,7 @@ class Lesson:
         lessons: list[Lesson] = []
 
         num_lines = 0
-        for v_note in VNote.collect_iter(exclude_trash=True):
+        for v_note in VNote.collect_iter(vault_dirs=vault_dirs, exclude_trash=True):
             with open(v_note.note_path, "r", encoding="utf8") as note_fd:
                 note_lines = note_fd.readlines()
             in_code_block = False
@@ -96,10 +99,8 @@ class EduTracker:
         if not args["edu"]:
             return self.ret_val
 
-        lessons: list[Lesson] = Lesson.collect()
-
-        vault_filter: None | list[str] = args["vault"]
-        lessons = self._filter_by_vault(lessons=lessons, vault_filter=vault_filter)
+        vault_dirs = VaultUtils().filter_vault_dirs(args=args)
+        lessons: list[Lesson] = Lesson.collect(vault_dirs=vault_dirs)
 
         courses = set(stsk.course for stsk in lessons)
         _logger.debug("Courses: %s.", courses)
