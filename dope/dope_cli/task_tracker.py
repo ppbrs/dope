@@ -4,6 +4,7 @@ Executing user requests related to tasks.
 import logging
 from typing import Any
 
+from dope.dope_cli.vault_utils import VaultUtils
 from dope.task import Task, TaskNext, TaskNow, TaskWait
 from dope.term import Term
 
@@ -26,13 +27,11 @@ class TaskTracker:
         if not any((args["tasks_next"], args["tasks_wait"], args["tasks_now"], args["tasks_all"])):
             return self.ret_val
 
-        tasks = Task.collect()
+        vault_dirs = VaultUtils().filter_vault_dirs(args=args)
+        tasks = Task.collect(vault_dirs=vault_dirs)
 
         tasks = self._filter_by_type(tasks=tasks, args=args)
         _logger.debug("Filtered %d tasks by type.", len(tasks))
-
-        tasks = self._filter_by_vault(tasks=tasks, args=args)
-        _logger.debug("Filtered %d tasks by vault.", len(tasks))
 
         tasks = self._filter_by_priority(tasks=tasks, args=args)
         _logger.debug("Filtered %d tasks by priority.", len(tasks))
@@ -61,18 +60,6 @@ class TaskTracker:
             elif isinstance(task, TaskNow) and args["tasks_now"]:
                 tasks_flt.append(task)
             elif isinstance(task, TaskWait) and args["tasks_wait"]:
-                tasks_flt.append(task)
-        return tasks_flt
-
-    @staticmethod
-    def _filter_by_vault(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
-        """Filter tasks by vault."""
-        vault_filter: None | list[str] = args["vault"]
-        if vault_filter is None:
-            return tasks
-        tasks_flt = []
-        for task in tasks:
-            if any(token in task.vault for token in vault_filter):
                 tasks_flt.append(task)
         return tasks_flt
 

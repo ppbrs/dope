@@ -10,6 +10,7 @@ import pathlib
 import sys
 
 from dope.markdown_link import MarkdownLink
+from dope.paths import V_DIRS
 from dope.v_note import VNote
 
 
@@ -29,7 +30,7 @@ class RemoveBrokenLinks:  # pylint: disable=too-few-public-methods
             raise SystemExit
 
     def __call__(self) -> None:
-        for v_note in VNote.collect_iter(exclude_trash=True):
+        for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
             self._process_note(v_note)
 
     @classmethod

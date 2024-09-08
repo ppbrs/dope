@@ -107,3 +107,15 @@ class VaultUtils:
                 ide.open_vault(vault_dir=vault_dir)
 
         return 0
+
+
+def test_vault_utils_filter_vault_dirs() -> None:
+    """Check VaultUtils().filter_vault_dirs method."""
+    assert VaultUtils().filter_vault_dirs(args={"vault": None}) == V_DIRS
+    assert VaultUtils().filter_vault_dirs(args={"vault": ["z"]}) == [
+        pathlib.PosixPath("~/projects/z").expanduser()]
+    assert VaultUtils().filter_vault_dirs(args={"vault": ["v"]}) == [
+        pathlib.PosixPath("~/Dropbox/the-vault").expanduser()]
+    assert VaultUtils().filter_vault_dirs(args={"vault": ["z", "f"]}) == [
+        pathlib.PosixPath("~/projects/z").expanduser(),
+        pathlib.PosixPath("~/Dropbox/projects/fl").expanduser()]

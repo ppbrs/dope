@@ -4,6 +4,7 @@ This module contains tests for Obsidian vaults.
 
 import logging
 
+from dope.paths import V_DIRS
 from dope.v_note import VNote
 
 _logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ def test_v_notes_newline() -> None:
     """Check if there are Windows-style new lines in the notes."""
     cnt_no_empty_line = 0  # The number of notes with no empty line in the end.
 
-    for v_note in VNote.collect_iter(exclude_trash=True):
+    for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
         for _, note_line in v_note.lines_iter(lazy=True, remove_newline=False):
             # pylint: disable-next=not-an-iterable
             # (This looks like a false positive).
@@ -26,7 +27,7 @@ def test_v_notes_newline() -> None:
 
 def test_v_notes_titles() -> None:
     """Check if there are inappropriate symbols in note titles."""
-    for v_note in VNote.collect_iter(exclude_trash=True):
+    for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
         title = v_note.note_path.stem
         symbols = ["`", "[", "]"]
         for symbol in symbols:
@@ -38,7 +39,7 @@ def test_v_notes_titles() -> None:
 
 def test_v_notes_inbox() -> None:
     """Check if there are unprocessed notes in inboxes."""
-    for v_note in VNote.collect_iter(exclude_trash=True):
+    for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
         vault_inbox_path = v_note.vault_dir / "_inbox"
         if v_note.note_path.parent == vault_inbox_path:
             logging.error(
