@@ -13,11 +13,15 @@
 			"variants":
 			[
 				{
-					"name": "python3: Run this module locally.",
+					"name": "python3: Run application in Terminal.",
+					"working_dir": "${project_path}",
+					"shell_cmd": "gnome-terminal --full-screen --tab -- bash -c 'python3 -u dope/__init__.py -d; exec bash'",
+				},
+				{
+					"name": "python3: Run this module in Sublime.",
 					"working_dir": "${project_path}",
 					"shell_cmd": "python3 -u \"$file\"",
 					"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
-					"selector": "source.python",
 				},
 				{
 					"name": "bash: make executable",

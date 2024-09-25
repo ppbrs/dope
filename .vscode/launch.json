@@ -3,7 +3,7 @@
 	"configurations": [
 		{
 			"name": "python3: Debug this module.",
-			"type": "python",
+			"type": "debugpy",
 			"request": "launch",
 			"program": "${file}",
 			"cwd": "${fileDirname}",
@@ -11,8 +11,22 @@
 			"justMyCode": false,
 		},
 		{
+			"name": "python3: Debug application.",
+			"type": "debugpy",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"program": "dope/__init__.py",
+			"args": [
+				"--debug",
+				// "--edu",
+				// "-t",
+			],
+			"console": "integratedTerminal",
+			"justMyCode": false,
+		},
+		{
 			"name": "python3: Debug PYTEST.",
-			"type": "python",
+			"type": "debugpy",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
 			"program": "/usr/local/lib/python3.10/dist-packages/pytest",
