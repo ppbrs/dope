@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from typing import Any
 
 from dope.dope_cli.vault_utils import VaultUtils
-from dope.paths import V_DIRS
 from dope.task import Task
 from dope.term import Term
 from dope.v_note import VNote

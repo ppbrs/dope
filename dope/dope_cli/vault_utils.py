@@ -7,7 +7,10 @@ import enum
 import logging
 import os
 import pathlib
+import time
 from typing import Any
+
+import psutil
 
 from dope.paths import OBSIDIAN_APP_PATH, V_DIRS
 
@@ -78,9 +81,17 @@ class VaultUtils:
         """
         Executing user's requests related to vaults.
         """
-        # Find out which IDEs will be used.
-        if args["ide"] is None:
-            return 0
+        cls._check_dropbox_daemon()
+        ret_val = 0
+        if args["ide"] is not None:
+            ret_val = cls._process_ide(args=args)
+        return ret_val
+
+    @classmethod
+    def _process_ide(cls, args: dict[str, Any]) -> int:
+        """
+        --ide/-i option opens vaults with specified IDEs.
+        """
         ides_known = set(Ide)
         if args["ide"] == []:
             ides = ides_known
@@ -105,8 +116,26 @@ class VaultUtils:
         for vault_dir in vault_dirs:
             for ide in ides:
                 ide.open_vault(vault_dir=vault_dir)
-
         return 0
+
+    @classmethod
+    def _check_dropbox_daemon(cls) -> None:
+        """Regardless of User arguments, check that Dropbox daemon is running."""
+
+        for proc in psutil.process_iter():
+            try:
+                name = proc.name()
+                if name == "dropbox":
+                    create_time = time.strftime(
+                        "%Y-%m-%d %H:%M:%S", time.localtime(proc.create_time()))
+                    _logger.info(
+                        "Dropbox daemon: PID=%d, status=%s, created %s, cmd='%s'.",
+                        proc.pid, proc.status(), create_time, " ".join(proc.cmdline()))
+                    break
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        else:
+            raise ValueError("Dropbox daemon is not running")
 
 
 def test_vault_utils_filter_vault_dirs() -> None:
