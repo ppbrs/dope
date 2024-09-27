@@ -29,3 +29,19 @@ Examples of task lines:
 `* [ ] #x/p2/2024-09-10 Do the thing A.`
 `* [ ] #w/p2/2024-09-10 Wait for B to happen.`.
 `* [ ] #n/p2/2024-09-10: Do the thing C.`
+
+***
+## Rover and base
+
+A **rover** is a smartphone with a copy of a vault saved in its filesystem; a **base** is a computer with a vault in its filesystem.
+
+On an Ubuntu machine, when a smartphone is connected via USB and 'File transfer' is chosen as 'USB mode', smartphone's filesystem is mounted and becomes accessible via [GVfs or GNOME Virtual file system](https://en.wikipedia.org/wiki/GVfs) on `/run/user/<user>/gvfs/<mtp>/<storage-type>`.
+
+Examples:
+* `<user>` can be `1000`,
+* `<mtp>` can be `mtp:host=motorola_moto_g_play_-_2024_ZY22K5ZNL3`,
+* `<storage-type>` can be `Internal shared storage`.
+
+The vault files then reside in `vaults/<vault-name>`.
+
+***

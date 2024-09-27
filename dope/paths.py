@@ -1,6 +1,7 @@
 """
 This file contains paths to database files and to vaults.
 """
+import os
 from pathlib import PosixPath
 
 #
@@ -26,6 +27,4 @@ assert OBSIDIAN_APP_PATH.exists() and OBSIDIAN_APP_PATH.is_file()
 # Rover
 #
 
-ROVER_PATH = (
-    PosixPath("/run/user/1000/gvfs")
-    / "mtp:host=SAMSUNG_SAMSUNG_Android_R9YT70ZBDTK/Internal storage")
+ROVER_BASE_PATH = PosixPath(f"/run/user/{os.getuid()}/gvfs/")
