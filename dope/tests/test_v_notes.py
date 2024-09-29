@@ -7,6 +7,8 @@ import logging
 from dope.paths import V_DIRS
 from dope.v_note import VNote
 
+from .common import RESERVED_SYMBOLS
+
 _logger = logging.getLogger(__name__)
 
 
@@ -29,8 +31,7 @@ def test_v_notes_titles() -> None:
     """Check if there are inappropriate symbols in note titles."""
     for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
         title = v_note.note_path.stem
-        symbols = ["`", "[", "]"]
-        for symbol in symbols:
+        for symbol in RESERVED_SYMBOLS:
             if symbol in title:
                 logging.warning(
                     "%s: Symbol `%s` in `%s`.",
