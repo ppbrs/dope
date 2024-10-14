@@ -1,5 +1,12 @@
 """
 A collection of helpers that extract markdown links from notes.
+
+Markdown syntax for a hyperlink is square brackets followed by parentheses:
+[Link text Here](https://link-url-here.org)
+
+Markdown links differ from Wiki links:
+* [[link]] is seen as "link" in text and links to page "link".
+* [[a|b]] appears as "b" but links to page "a".
 """
 from __future__ import annotations
 
@@ -17,10 +24,11 @@ class MarkdownLink:
     A collection of helpers that extract markdown links from notes.
     """
     name: str
-    """Human-readable name"""
+    """Human-readable link name"""
     uri: str
-    """Uniform resource identifier"""
+    """Uniform Resource Identifier"""
     uri_raw: str
+    """Uniform Resource Identifier as it appears in the note"""
 
     def __init__(self, name: str, uri: str):
         self.name = name
@@ -98,8 +106,12 @@ class MarkdownLink:
 
     def is_external(self) -> bool:
         """Whether or not the URI points to an external resourse."""
-        return (self.uri.startswith("http") or self.uri.startswith("mailto")
-                or self.uri.startswith("ssh"))
+        return (
+            self.uri.startswith("http")
+            or self.uri.startswith("mailto")
+            or self.uri.startswith("ssh")
+            or self.uri.startswith("chrome")
+        )
 
 
 def test_markdown_link_collect() -> None:
