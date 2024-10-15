@@ -85,6 +85,8 @@ class VaultUtils:
         ret_val = 0
         if args["ide"] is not None:
             ret_val = cls._process_ide(args=args)
+        if args["stat"]:
+            ret_val += cls._process_stat(args=args)
         return ret_val
 
     @classmethod
@@ -136,6 +138,20 @@ class VaultUtils:
                 pass
         else:
             raise ValueError("Dropbox daemon is not running")
+
+    @classmethod
+    def _process_stat(cls, args: dict[str, Any]) -> int:
+        """Show vaults' statistics."""
+        for vault_dir in cls.filter_vault_dirs(args=args):
+            print(f"{vault_dir.name} statistics:")
+
+            # Getting directory size
+            vault_dir_size = sum(file.stat().st_size for file in vault_dir.rglob('*'))
+            vault_dir_size_mb = vault_dir_size / 1024 / 1024
+            print(f"\t{round(vault_dir_size_mb, 1)} MB = {vault_dir_size} B")
+
+            print()
+        return 0
 
 
 def test_vault_utils_filter_vault_dirs() -> None:
