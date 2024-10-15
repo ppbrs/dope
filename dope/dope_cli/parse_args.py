@@ -75,6 +75,10 @@ def parse_args() -> dict[str, Any]:
         "--test", dest="test",
         action="store_true",
         help="Run all tests.")
+    prsr.add_argument(
+        "--stat", dest="stat",
+        action="store_true",
+        help="Show vault statistics.")
 
     #
     # Education related:
