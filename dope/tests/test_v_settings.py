@@ -52,6 +52,8 @@ def test_v_settings_hotkeys() -> None:
         Hotkey("tag-pane:open", ["Mod"], "["),
         Hotkey("outline:open", ["Mod"], "]"),
         Hotkey("insert-current-date", ["Mod", "Shift"], "D"),
+        Hotkey("theme:use-dark", ["Alt", "Shift"], "D"),
+        Hotkey("theme:use-light", ["Alt", "Shift"], "L"),
     ]
 
     for vault_dir in V_DIRS:
