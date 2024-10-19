@@ -25,11 +25,11 @@ class Task:
     deadline: date
 
     re_obj_full_tag = re.compile(
-        r".*"  # Pptional symbols before the tag.
-        + r"(?P<full_tag>\#(n|x|w)\/.*?)"  # The tag itself.
+        r".*"  # Optional symbols before the tag.
+        + r"(?P<full_tag>\#(n|x|w)\d\/.*?)"  # The tag itself.
         + r"(\s.*|\:|$)")  # Either nothing, or a colon, or at least one space after the tag.
     """
-    A full tag looks like #x/p2/2023-12-31.
+    A full tag looks like #x2/2023-12-31.
     """
     re_obj_deadline = re.compile(r"^(?P<year>\d\d\d\d)-(?P<month>\d\d)-(?P<day>\d\d)$")
 
@@ -57,30 +57,25 @@ class Task:
 
             # Correct errors in a tag and emit warnings here.
             tag_parts = full_tag.split("/")
-            if tag_parts[0] not in {"#n", "#x", "#w"}:
-                _logger.error(
-                    "Corrupted tag `%s`, line %d of '%s/%s'.", tag_parts[0], line_num, vault, note)
-            priority = 3
-            if len(tag_parts) >= 2:
-                if tag_parts[1] not in {"p1", "p2", "p3"}:
-                    _logger.error("Tag `%s` in `%s/%s` has unknown priority.",
-                                  full_tag, vault, note)
-                else:
-                    priority = int(tag_parts[1][1:])
 
-            deadline = date.today()
-            if len(tag_parts) != 3:
-                _logger.error("Tag `%s` in `%s/%s` is missing required subtags.",
-                              full_tag, vault, note)
+            tag_ok = (
+                len(tag_parts) == 2
+                and tag_parts[0][0:2] in {"#n", "#x", "#w"}
+                and tag_parts[0][2] in {"1", "2", "3"}
+            )
+            if not tag_ok:
+                _logger.error(
+                    "Corrupted tag `%s` in '%s/%s', line %d.", full_tag, vault, note, line_num)
+            priority = int(tag_parts[0][2:])
+
+            mtch_deadline = cls.re_obj_deadline.fullmatch(tag_parts[1])
+            if mtch_deadline is not None:
+                deadline = date(year=int(mtch_deadline.groupdict()["year"]),
+                                month=int(mtch_deadline.groupdict()["month"]),
+                                day=int(mtch_deadline.groupdict()["day"]))
             else:
-                mtch_deadline = cls.re_obj_deadline.fullmatch(tag_parts[2])
-                if mtch_deadline is not None:
-                    deadline = date(year=int(mtch_deadline.groupdict()["year"]),
-                                    month=int(mtch_deadline.groupdict()["month"]),
-                                    day=int(mtch_deadline.groupdict()["day"]))
-                else:
-                    _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.",
-                                  full_tag, vault, note)
+                _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.",
+                              full_tag, vault, note)
 
             yield task_cls(descr=cls.clean_line(note_line), vault=vault, note=note,
                            priority=priority, deadline=deadline)
@@ -169,25 +164,25 @@ def test_task_parse_match_tag() -> None:
         full_tag: str | None  # The tag if there is one.
 
     test_cases = [
-        TestCase("abcd #w/p3/2020-09-09 abcd", True, "#w/p3/2020-09-09"),
-        TestCase("#w/p3/2020-09-09 abcd", True, "#w/p3/2020-09-09"),
-        TestCase("#w/p3/2020-09-09", True, "#w/p3/2020-09-09"),
-        TestCase(" #w/p3/2020-09-09", True, "#w/p3/2020-09-09"),
+        TestCase("abcd #w3/2020-09-09 abcd", True, "#w3/2020-09-09"),
+        TestCase("#w3/2020-09-09 abcd", True, "#w3/2020-09-09"),
+        TestCase("#w3/2020-09-09", True, "#w3/2020-09-09"),
+        TestCase(" #w3/2020-09-09", True, "#w3/2020-09-09"),
 
-        TestCase("abcd #x/p3/2020-09-09 abcd", True, "#x/p3/2020-09-09"),
-        TestCase("#x/p3/2020-09-09 abcd", True, "#x/p3/2020-09-09"),
-        TestCase("#x/p3/2020-09-09", True, "#x/p3/2020-09-09"),
-        TestCase(" #x/p3/2020-09-09", True, "#x/p3/2020-09-09"),
+        TestCase("abcd #x3/2020-09-09 abcd", True, "#x3/2020-09-09"),
+        TestCase("#x3/2020-09-09 abcd", True, "#x3/2020-09-09"),
+        TestCase("#x3/2020-09-09", True, "#x3/2020-09-09"),
+        TestCase(" #x3/2020-09-09", True, "#x3/2020-09-09"),
 
-        TestCase("abcd #n/p3/2020-09-09 abcd", True, "#n/p3/2020-09-09"),
-        TestCase("#n/p3/2020-09-09 abcd", True, "#n/p3/2020-09-09"),
-        TestCase("#n/p3/2020-09-09", True, "#n/p3/2020-09-09"),
-        TestCase(" #n/p3/2020-09-09", True, "#n/p3/2020-09-09"),
+        TestCase("abcd #n3/2020-09-09 abcd", True, "#n3/2020-09-09"),
+        TestCase("#n3/2020-09-09 abcd", True, "#n3/2020-09-09"),
+        TestCase("#n3/2020-09-09", True, "#n3/2020-09-09"),
+        TestCase(" #n3/2020-09-09", True, "#n3/2020-09-09"),
 
-        TestCase("abcd #n/p3/2020-09-09: abcd", True, "#n/p3/2020-09-09"),
-        TestCase("#n/p3/2020-09-09: abcd", True, "#n/p3/2020-09-09"),
-        TestCase("#n/p3/2020-09-09:", True, "#n/p3/2020-09-09"),
-        TestCase(" #n/p3/2020-09-09:", True, "#n/p3/2020-09-09"),
+        TestCase("abcd #n3/2020-09-09: abcd", True, "#n3/2020-09-09"),
+        TestCase("#n3/2020-09-09: abcd", True, "#n3/2020-09-09"),
+        TestCase("#n3/2020-09-09:", True, "#n3/2020-09-09"),
+        TestCase(" #n3/2020-09-09:", True, "#n3/2020-09-09"),
 
         TestCase("#week", False, None),
         TestCase("#now", False, None),
