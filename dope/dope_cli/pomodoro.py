@@ -98,13 +98,16 @@ class Pomodoro:
     def _find_all() -> list[_TimerInfo]:
         tmr_info_arr = []
         for proc in psutil.process_iter():
-            cmd_line = proc.cmdline()
-            if len(cmd_line) == 4 and cmd_line[0] == "python3" and "pomodoro" in cmd_line[1]:
-                tmr_info_arr.append(_TimerInfo(
-                    name=cmd_line[3],
-                    tout_min=int(cmd_line[2]),
-                    t_start=proc.create_time(),
-                    pid=proc.pid))
+            try:
+                cmd_line = proc.cmdline()
+                if len(cmd_line) == 4 and cmd_line[0] == "python3" and "pomodoro" in cmd_line[1]:
+                    tmr_info_arr.append(_TimerInfo(
+                        name=cmd_line[3],
+                        tout_min=int(cmd_line[2]),
+                        t_start=proc.create_time(),
+                        pid=proc.pid))
+            except psutil.ZombieProcess:
+                pass
         return sorted(
             tmr_info_arr,
             key=lambda tmr_info: tmr_info.pid,
