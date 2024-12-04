@@ -49,11 +49,11 @@ class MarkdownLink:
 
         name: str
         uri: str
-        idx_name_head: int
-        idx_name_tail: int
-        idx_uri_head: int
-        idx_uri_tail: int
-        cnt_brackets: int  # The counter of parentheses or square brackets.
+        idx_name_head: int = 0
+        idx_name_tail: int = 0
+        idx_uri_head: int = 0
+        idx_uri_tail: int = 0
+        cnt_brackets: int = 0  # The counter of parentheses or square brackets.
         for i, char in enumerate(line):
             match state:
                 case _State.IDLE:
