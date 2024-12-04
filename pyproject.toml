@@ -18,6 +18,7 @@ dependencies = [
 	"types-psutil >= 5.9",
 	"colorama >= 0.4",
 	"types-colorama >= 0.4",
+	"pylama >= 8.4.1",
 
 	"PyGObject >= 3.50",  # requires libgirepository1.0-dev for some reason
 ]
