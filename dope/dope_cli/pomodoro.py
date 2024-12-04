@@ -13,7 +13,7 @@ import psutil
 from colorama import Fore, Style
 
 gi.require_version("Notify", "0.7")
-from gi.repository import Notify  # noqa
+from gi.repository import Notify  # noqa # type: ignore
 
 
 @dataclasses.dataclass

@@ -40,6 +40,12 @@
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{
+					"name": "Run PYRIGHT on whole project.",
+					"working_dir": "${project_path}",
+					"shell_cmd": "pyright",
+					"file_regex": "(...*?):([0-9]*):.*",
+				},
+				{
 					"name": "Run ISORT on this module.",
 					"working_dir": "${project_path}",
 					"shell_cmd": "isort ${file}",
