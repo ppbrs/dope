@@ -19,6 +19,7 @@ dependencies = [
 	"colorama >= 0.4",
 	"types-colorama >= 0.4",
 	"pylama >= 8.4.1",
+	"pyright >= 1.1",
 
 	"PyGObject >= 3.50",  # requires libgirepository1.0-dev for some reason
 ]
@@ -70,6 +71,17 @@ log_format = "%(asctime)s.%(msecs)03d %(levelname)s %(funcName)s: %(message)s"
 # Logging level for real-time output:
 log_cli = "True"
 log_cli_level = "INFO"
+
+# ==================================================================================================
+# pyright
+# ==================================================================================================
+[tool.pyright]
+
+include = ["dope"]
+exclude = []
+
+pythonVersion = "3.12"
+pythonPlatform = "Linux"
 
 # ==================================================================================================
 # pylama

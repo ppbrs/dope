@@ -17,6 +17,8 @@ _logger = logging.getLogger(__name__)
 @dataclass
 class Task:
     """Encapsulates all information about a task."""
+    SORTING_PRECEDENCE = -1
+    """It is considered when listing tasks."""
 
     descr: str
     vault: str
@@ -75,6 +77,7 @@ class Task:
                                 month=int(mtch_deadline.groupdict()["month"]),
                                 day=int(mtch_deadline.groupdict()["day"]))
             else:
+                deadline = date.today()
                 _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.",
                               full_tag, vault, note)
 
@@ -146,14 +149,17 @@ class Task:
 
 class TaskNext(Task):
     """Encapsulates all information about a next action."""
+    SORTING_PRECEDENCE = 1
 
 
 class TaskWait(Task):
     """Encapsulates all information about a pending action."""
+    SORTING_PRECEDENCE = 2  # lowest
 
 
 class TaskNow(Task):
     """Encapsulates all information about a current action."""
+    SORTING_PRECEDENCE = 0  # highest
 
 
 def test_task_parse_match_tag() -> None:
@@ -194,8 +200,7 @@ def test_task_parse_match_tag() -> None:
 
     for test_case in test_cases:
         match = Task.re_obj_full_tag.match(test_case.string)
-        if match is not None:
-            full_tag = match.groupdict()["full_tag"]
+        full_tag = match.groupdict()["full_tag"] if match is not None else None
         if test_case.matches:
             assert test_case.full_tag is not None
 
