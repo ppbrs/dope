@@ -70,3 +70,13 @@ log_format = "%(asctime)s.%(msecs)03d %(levelname)s %(funcName)s: %(message)s"
 # Logging level for real-time output:
 log_cli = "True"
 log_cli_level = "INFO"
+
+# ==================================================================================================
+# pylama
+# ==================================================================================================
+[tool.pylama]
+
+format = "pylint"
+linters = "eradicate,mccabe,mypy,pycodestyle,pylint,pyflakes,isort,pyright"
+# pydocstyle
+
