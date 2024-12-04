@@ -19,6 +19,7 @@ dependencies = [
 	"colorama >= 0.4",
 	"types-colorama >= 0.4",
 	"pyright >= 1.1",
+	"pylama >= 8.4.1",
 
 	"PyGObject >= 3.50",  # requires libgirepository1.0-dev for some reason
 ]
@@ -81,3 +82,12 @@ exclude = []
 
 pythonVersion = "3.12"
 pythonPlatform = "Linux"
+
+#
+# pylama configuration
+#
+[tool.pylama]
+
+format = "pylint"
+linters = "eradicate,mccabe,mypy,pycodestyle,pylint,pyflakes,isort,pyright"
+# pydocstyle

@@ -30,13 +30,13 @@
 				{
 					"name": "Run PYLAMA on this module.",
 					"working_dir": "${project_path}",
-					"shell_cmd": "pylama -o pylama.ini ${file}",
+					"shell_cmd": "pylama ${file}",
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{
 					"name": "Run PYLAMA on whole project.",
 					"working_dir": "${project_path}",
-					"shell_cmd": "pylama -o pylama.ini",
+					"shell_cmd": "pylama",
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{

@@ -16,7 +16,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}",
 			},
-			"command": "pylama -o pylama.ini ${file}",
+			"command": "pylama ${file}",
 			"group": "build",
 		},
 		{
@@ -25,7 +25,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}",
 			},
-			"command": "pylama -o pylama.ini",
+			"command": "pylama",
 			"group": "build",
 		},
 		{
