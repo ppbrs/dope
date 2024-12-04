@@ -29,6 +29,15 @@
 			"group": "build",
 		},
 		{
+			"label": "python3: Run PYRIGHT on whole project.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "pyright",
+			"group": "build",
+		},
+		{
 			"label": "python3: Run ISORT on this module.",
 			"type": "shell",
 			"options": {

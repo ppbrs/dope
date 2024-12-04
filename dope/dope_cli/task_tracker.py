@@ -40,7 +40,7 @@ class TaskTracker:
         def sort_func(task: Task) -> tuple[int, int, int]:
             return (
                 task.get_days_to_dealine(),
-                {TaskNow: 0, TaskNext: 1, TaskWait: 2}[type(task)],
+                task.SORTING_PRECEDENCE,
                 task.priority
             )
         tasks = sorted(tasks, key=sort_func, reverse=True)
