@@ -21,3 +21,14 @@ def test_v_files_titles() -> None:
                     logging.warning(
                         "%s: Symbol `%s` in `%s` (%s).",
                         vault_dir.stem, symbol, path.name, path)
+
+
+def test_v_files_trash() -> None:
+    """Check if there are files in .trash directory."""
+    trash_files = []
+    for vault_dir in V_DIRS:
+        for path in vault_dir.rglob(".trash/*"):
+            path_rel = path.relative_to(vault_dir.parent)
+            trash_files.append(str(path_rel))
+            logging.warning("%s: %s.", vault_dir.stem, path_rel)
+    assert not trash_files, f"Found files in .trash directories: {trash_files}"
