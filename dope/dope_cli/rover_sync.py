@@ -107,7 +107,7 @@ class RoverSync:
                 # The file may have already been deleted.
                 continue
             print()
-            msg = "File " + Term.bold(str(fname)) + " is on ROVER but not on BASE."
+            msg = f"File {bvdir.name}/{Term.bold(str(fname))} is on ROVER but not on BASE."
             print(msg)
             if args["rover"] == "wet":
                 cls._remove_from_rover(rvdir=rvdir, fname=fname)
@@ -120,7 +120,8 @@ class RoverSync:
                 # The file may have already been deleted.
                 continue
             print()
-            msg = f"{i}/{len(fdiff_br)}: File {Term.bold(str(fname))} is on BASE but not on ROVER."
+            msg = (f"{i}/{len(fdiff_br)}: "
+                   f"File {bvdir.name}/{Term.bold(str(fname))} is on BASE but not on ROVER.")
             print(msg)
             if args["rover"] == "wet":
                 cls._copy_to_rover(rvdir=rvdir, bvdir=bvdir, fname=fname)
