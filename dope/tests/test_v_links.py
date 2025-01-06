@@ -8,6 +8,7 @@ import pathlib
 import pytest
 
 from dope.markdown_link import MarkdownLink
+from dope.wiki_link import WikiLink
 from dope.paths import V_DIRS
 from dope.v_note import VNote
 
@@ -86,14 +87,15 @@ def test_v_links(nonfatal: bool) -> None:
     """
 
     num_errors = 0
-    num_links = 0
+    num_md_links = 0
+    num_wk_links = 0
     for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
         for line_idx, note_line in v_note.lines_iter(lazy=True, remove_newline=True):
             # pylint: disable-next=not-an-iterable
             # (This looks like a false positive).
             for md_link in MarkdownLink.collect_iter(line=note_line):
+                num_md_links += 1
                 try:
-                    num_links += 1
                     _check_v_link(v_note=v_note, line_idx=line_idx, md_link=md_link)
                 except AssertionError as err:
                     num_errors += 1
@@ -102,6 +104,21 @@ def test_v_links(nonfatal: bool) -> None:
                     if not nonfatal:
                         raise
 
-    _logger.info("%d links were found and checked", num_links)
+            for wk_link in WikiLink.collect_iter(line=note_line):
+                num_wk_links += 1
+                _logger.info(
+                    "#%d: %s; %s:%d; %s",
+                    num_wk_links, v_note.vault_dir.name, v_note.note_path.name, line_idx, wk_link)
+                try:
+                    _check_v_link(v_note=v_note, line_idx=line_idx, md_link=wk_link)
+                except AssertionError as err:
+                    num_errors += 1
+                    _logger.error("%s: %s", err.__class__.__name__,
+                                  str(err).split("\n", maxsplit=1)[0])
+                    if not nonfatal:
+                        raise
+
+    _logger.info("%d Markdown links were found and checked", num_md_links)
+    _logger.info("%d Wiki links were found", num_wk_links)
     if num_errors:
         _logger.error("%d errors", num_errors)

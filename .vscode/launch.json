@@ -33,7 +33,7 @@
 			"args": [
 				// "--exitfirst",
 				// "--count=1",
-				// "-k test_v_links",
+				"-k test_wiki_link_collect",
 			],
 			"console": "integratedTerminal",
 			"justMyCode": false,
