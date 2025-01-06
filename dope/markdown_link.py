@@ -15,35 +15,27 @@ import logging
 from collections.abc import Generator
 from dataclasses import dataclass
 
+from dope.hyper_link import HyperLink
+
 _logger = logging.getLogger(__name__)
 
 
-@dataclass()
-class MarkdownLink:
+# @dataclass()
+class MarkdownLink(HyperLink):
     """
     A collection of helpers that extract markdown links from notes.
     """
-    name: str
-    """Human-readable link name"""
-    uri: str
-    """Uniform Resource Identifier"""
-    uri_raw: str
-    """Uniform Resource Identifier as it appears in the note"""
-
-    def __init__(self, name: str, uri: str):
-        self.name = name
-        self.uri_raw = uri
-        self.uri = uri.strip()
 
     @classmethod
     def collect_iter(cls, line: str) -> Generator[MarkdownLink, None, None]:
         """Find all markdown links in a given line."""
         @enum.unique
         class _State(enum.Enum):
-            IDLE = enum.auto()  # We are looking for a name
+            IDLE = enum.auto()  # We are looking for the opening square bracket.
             NAME = enum.auto()  # We are inside a name.
             NAME_URI = enum.auto()  # We have just finished with the name and expecting an URI.
             URI = enum.auto()  # We are inside an URI.
+            CODE = enum.auto()  # We are inside of an inline code snippet.
 
         state = _State.IDLE
 
@@ -61,6 +53,8 @@ class MarkdownLink:
                         state = _State.NAME
                         idx_name_head = i + 1
                         cnt_brackets = 1
+                    elif char == "`":
+                        state = _State.CODE
                 case _State.NAME:
                     if char == "[":
                         cnt_brackets += 1
@@ -84,34 +78,13 @@ class MarkdownLink:
                         if cnt_brackets == 0:
                             idx_uri_tail = i
                             state = _State.IDLE
-                            name = line[idx_name_head:idx_name_tail]
+                            name = line[idx_name_head:idx_name_tail].strip()
                             uri = line[idx_uri_head:idx_uri_tail]
                             yield MarkdownLink(name, uri)
+                case _State.CODE:
+                    if char == "`":
+                        state = _State.IDLE
         # end of collect_iter
-
-    def decoded(self) -> str:
-        """
-        Decode a percent-encoded URI
-
-        https://en.wikipedia.org/wiki/File_URI_scheme
-        Characters which are not allowed in URIs, but which are allowed in filenames,
-        must be percent-encoded. For example, any of "{}`^ " and all control characters.
-        """
-        uri_dec = str(self.uri)
-        uri_dec = uri_dec.replace("%20", " ")
-        uri_dec = uri_dec.replace("%28", "(")
-        uri_dec = uri_dec.replace("%29", ")")
-        uri_dec = uri_dec.replace("%40", "@")
-        return uri_dec
-
-    def is_external(self) -> bool:
-        """Whether or not the URI points to an external resourse."""
-        return (
-            self.uri.startswith("http")
-            or self.uri.startswith("mailto")
-            or self.uri.startswith("ssh")
-            or self.uri.startswith("chrome")
-        )
 
 
 def test_markdown_link_collect() -> None:
@@ -130,6 +103,7 @@ def test_markdown_link_collect() -> None:
         TestCase(line="there-is-no-link", md_links=[]),
         TestCase(line="there[is[no[link", md_links=[]),
         TestCase(line="[name] (uri)", md_links=[]),
+        TestCase(line="Use `std::bitset<>::opeator[]()`.", md_links=[]),
         #
         # Simple links
         #
