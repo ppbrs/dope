@@ -4,13 +4,15 @@ This module contains tests for settings of Obsidian vaults.
 import dataclasses
 import json
 import logging
+import pathlib
 
-from dope.paths import V_DIRS
+from .common import vault_dirs
 
 _logger = logging.getLogger(__name__)
 
 
-def test_v_settings_hotkeys() -> None:
+@vault_dirs
+def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
     """
     Check that hotkeys.json contains all my hot keys.
 
@@ -56,30 +58,29 @@ def test_v_settings_hotkeys() -> None:
         Hotkey("theme:use-light", ["Alt", "Shift"], "L"),
     ]
 
-    for vault_dir in V_DIRS:
-        v_name = vault_dir.stem
-        _logger.info("Checking %s", v_name)
-        hk_path = vault_dir / ".obsidian" / "hotkeys.json"
-        assert hk_path.exists() and hk_path.is_file(), f"Could not find file `{hk_path}`."
-        with open(hk_path, "rb") as hk_fp:
-            hk_json_obj = json.load(fp=hk_fp)
+    v_name = vault_dir.stem
+    hk_path = vault_dir / ".obsidian" / "hotkeys.json"
+    assert hk_path.exists() and hk_path.is_file(), f"Could not find file `{hk_path}`."
+    with open(hk_path, "rb") as hk_fp:
+        hk_json_obj = json.load(fp=hk_fp)
 
-        hk_v_arr: list[Hotkey] = []
-        for action, settings in hk_json_obj.items():
-            for setting in settings:
-                # An item may be empty; it means that the setting is removed from the vault.
-                if setting.get("modifiers") is not None and setting.get("key") is not None:
-                    hk_v_arr.append(Hotkey(action, setting["modifiers"], setting["key"]))
-                    # _logger.info(hk_v_arr[-1])
+    hk_v_arr: list[Hotkey] = []
+    for action, settings in hk_json_obj.items():
+        for setting in settings:
+            # An item may be empty; it means that the setting is removed from the vault.
+            if setting.get("modifiers") is not None and setting.get("key") is not None:
+                hk_v_arr.append(Hotkey(action, setting["modifiers"], setting["key"]))
+                # _logger.info(hk_v_arr[-1])
 
-        for hk in hk_exp:
-            hk_v_arr_filtered = [hk_v for hk_v in hk_v_arr if hk.action == hk_v.action]
-            assert len(hk_v_arr_filtered) > 0, f"{v_name}: `{hk.action}` is not in hotkeys.json."
-            assert any(hk == hk_v for hk_v in hk_v_arr_filtered), \
-                f"{v_name}: {hk} is not in {hk_v_arr_filtered}."
+    for hk in hk_exp:
+        hk_v_arr_filtered = [hk_v for hk_v in hk_v_arr if hk.action == hk_v.action]
+        assert len(hk_v_arr_filtered) > 0, f"{v_name}: `{hk.action}` is not in hotkeys.json."
+        assert any(hk == hk_v for hk_v in hk_v_arr_filtered), \
+            f"{v_name}: {hk} is not in {hk_v_arr_filtered}."
 
 
-def test_v_settings_app() -> None:
+@vault_dirs
+def test_v_settings_app(vault_dir: pathlib.PosixPath) -> None:
     """
     Check that app.json contains all my preferences.
     """
@@ -118,15 +119,13 @@ def test_v_settings_app() -> None:
 
     }
 
-    for vault_dir in V_DIRS:
-        v_name = vault_dir.stem
-        _logger.info("Checking %s", v_name)
-        app_path = vault_dir / ".obsidian" / "app.json"
-        assert app_path.exists() and app_path.is_file(), f"Could not find file `{app_path}`."
-        with open(app_path, "rb") as app_fp:
-            app_vault = json.load(fp=app_fp)
-        for k, v in app_exp.items():
-            assert k in app_vault, \
-                f"{v_name}: \"{k}\" is not in `app.json`."
-            assert v == app_vault[k], \
-                f"{v_name}: \"{k}\" is expected to be `{v}` but is `{app_vault[k]}`."
+    v_name = vault_dir.stem
+    app_path = vault_dir / ".obsidian" / "app.json"
+    assert app_path.exists() and app_path.is_file(), f"Could not find file `{app_path}`."
+    with open(app_path, "rb") as app_fp:
+        app_vault = json.load(fp=app_fp)
+    for k, v in app_exp.items():
+        assert k in app_vault, \
+            f"{v_name}: \"{k}\" is not in `app.json`."
+        assert v == app_vault[k], \
+            f"{v_name}: \"{k}\" is expected to be `{v}` but is `{app_vault[k]}`."

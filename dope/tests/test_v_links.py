@@ -7,8 +7,8 @@ import pathlib
 
 import pytest
 
+from .common import vault_dirs
 from dope.markdown_link import MarkdownLink
-from dope.paths import V_DIRS
 from dope.v_note import VNote
 
 _logger = logging.getLogger(__name__)
@@ -70,8 +70,9 @@ def _check_v_link(v_note: VNote, line_idx: int, md_link: MarkdownLink) -> None:
              f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{md_link.uri}`.")
 
 
-@pytest.mark.parametrize("nonfatal", [True])  # type: ignore[misc] # allow untyped decorator
-def test_v_links(nonfatal: bool) -> None:
+@vault_dirs
+@pytest.mark.parametrize(argnames="nonfatal", argvalues=[True], ids=["nonfatal"])
+def test_v_links(vault_dir: pathlib.PosixPath, nonfatal: bool) -> None:
     """
     Check the correctness of all links in notes.
 
@@ -87,7 +88,7 @@ def test_v_links(nonfatal: bool) -> None:
 
     num_errors = 0
     num_links = 0
-    for v_note in VNote.collect_iter(vault_dirs=V_DIRS, exclude_trash=True):
+    for v_note in VNote.collect_iter(vault_dirs=[vault_dir], exclude_trash=True):
         for line_idx, note_line in v_note.lines_iter(lazy=True, remove_newline=True):
             # pylint: disable-next=not-an-iterable
             # (This looks like a false positive).
