@@ -80,3 +80,14 @@ format = "pylint"
 linters = "eradicate,mccabe,mypy,pycodestyle,pylint,pyflakes,isort,pyright"
 # pydocstyle
 
+# ==================================================================================================
+# isort
+# ==================================================================================================
+[tool.isort]
+# See all isort options: https://pycqa.github.io/isort/docs/configuration/options.html
+line_length = 100
+wrap_length = 100
+
+# Personally, I find this option the best. It allows faster debugging and leaving comments
+# for a particular import.
+force_single_line = "True"
