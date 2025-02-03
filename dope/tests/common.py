@@ -1,5 +1,6 @@
 """Common code for tests."""
 import pytest
+
 from dope.paths import V_DIRS
 
 # Notes and other files cannot contain these symbols:

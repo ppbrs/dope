@@ -5,7 +5,10 @@ import logging
 from typing import Any
 
 from dope.dope_cli.vault_utils import VaultUtils
-from dope.task import Task, TaskNext, TaskNow, TaskWait
+from dope.task import Task
+from dope.task import TaskNext
+from dope.task import TaskNow
+from dope.task import TaskWait
 from dope.term import Term
 
 _logger = logging.getLogger(__name__)

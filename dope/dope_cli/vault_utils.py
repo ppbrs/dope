@@ -12,7 +12,8 @@ from typing import Any
 
 import psutil
 
-from dope.paths import OBSIDIAN_APP_PATH, V_DIRS
+from dope.paths import OBSIDIAN_APP_PATH
+from dope.paths import V_DIRS
 
 _logger = logging.getLogger(__name__)
 

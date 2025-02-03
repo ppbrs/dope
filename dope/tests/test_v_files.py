@@ -5,7 +5,6 @@ This module contains tests for general files in Obsidian vaults.
 import logging
 import pathlib
 
-
 from .common import RESERVED_SYMBOLS
 from .common import vault_dirs
 

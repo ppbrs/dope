@@ -1,15 +1,15 @@
 """
 This module contains tests for Obsidian vaults.
 """
-
 import logging
 import pathlib
 
 import pytest
 
-from .common import vault_dirs
 from dope.markdown_link import MarkdownLink
 from dope.v_note import VNote
+
+from .common import vault_dirs
 
 _logger = logging.getLogger(__name__)
 
