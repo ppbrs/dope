@@ -7,7 +7,7 @@ import subprocess
 _logger = logging.getLogger(__name__)
 
 
-def test_isort() -> None:
+def test_lint_isort() -> None:
     """Run isort on all files in the package."""
 
     completed_process = subprocess.run(
@@ -19,3 +19,20 @@ def test_isort() -> None:
         for line in completed_process.stderr.splitlines():
             _logger.error("%s", line)
         assert False, "isort failed"
+
+
+def test_lint_pylint() -> None:
+    """Run pylint on all files in the package."""
+
+    completed_process = subprocess.run(
+        "pylint --recursive=true --verbose --rc-file=pyproject.toml *.py", shell=True,
+        check=False,
+        capture_output=True, text=True,
+    )
+    for line in completed_process.stdout.splitlines():
+        if line:
+            _logger.info("%s", line)
+    if completed_process.returncode != 0:
+        for line in completed_process.stderr.splitlines():
+            _logger.error("%s", line)
+        assert False, "pylint failed"
