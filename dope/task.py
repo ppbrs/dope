@@ -26,10 +26,10 @@ class Task:
 
     re_obj_full_tag = re.compile(
         r".*"  # Optional symbols before the tag.
-        + r"(?P<full_tag>\#(n|x|w)\d\/.*?)"  # The tag itself.
+        + r"(?P<full_tag>\#.*?\/(n|x|w)\d)"  # The tag itself.
         + r"(\s.*|\:|$)")  # Either nothing, or a colon, or at least one space after the tag.
     """
-    A full tag looks like #x2/2023-12-31.
+    A full tag looks like #2023-12-31/x2.
     """
     re_obj_deadline = re.compile(r"^(?P<year>\d\d\d\d)-(?P<month>\d\d)-(?P<day>\d\d)$")
 
@@ -50,7 +50,7 @@ class Task:
             full_tag = mtch_full_tag.groupdict()["full_tag"]
             note_line = note_line.replace(full_tag, "")
 
-            task_cls = cls._get_task_class(full_tag)
+            task_cls = cls.get_task_class(full_tag)
 
             vault = v_note.vault_dir.stem
             note = v_note.note_path.stem
@@ -60,15 +60,16 @@ class Task:
 
             tag_ok = (
                 len(tag_parts) == 2
-                and tag_parts[0][0:2] in {"#n", "#x", "#w"}
-                and tag_parts[0][2] in {"1", "2", "3"}
+                and tag_parts[0][0] == "#"
+                and tag_parts[1][0] in {"n", "x", "w"}
+                and tag_parts[1][1] in {"1", "2", "3"}
             )
             if not tag_ok:
                 _logger.error(
                     "Corrupted tag `%s` in '%s/%s', line %d.", full_tag, vault, note, line_num)
-            priority = int(tag_parts[0][2:])
+            priority = int(tag_parts[1][1:]) if len(tag_parts) > 1 else 1
 
-            mtch_deadline = cls.re_obj_deadline.fullmatch(tag_parts[1])
+            mtch_deadline = cls.re_obj_deadline.fullmatch(tag_parts[0][1:])
             if mtch_deadline is not None:
                 deadline = date(year=int(mtch_deadline.groupdict()["year"]),
                                 month=int(mtch_deadline.groupdict()["month"]),
@@ -98,12 +99,13 @@ class Task:
         return note_line
 
     @classmethod
-    def _get_task_class(cls, full_tag: str) -> type[TaskNext] | type[TaskWait] | type[TaskNow]:
-        if full_tag.startswith("#x"):
+    def get_task_class(cls, full_tag: str) -> type[TaskNext] | type[TaskWait] | type[TaskNow]:
+        """Determine concrete type of a task using the given tag."""
+        if full_tag[-2] == "x":
             return TaskNext
-        if full_tag.startswith("#w"):
+        if full_tag[-2] == "w":
             return TaskWait
-        if full_tag.startswith("#n"):
+        if full_tag[-2] == "n":
             return TaskNow
         raise RuntimeError
 
@@ -162,31 +164,32 @@ def test_task_parse_match_tag() -> None:
         string: str  # A text line.
         matches: bool  # Whether there is a tag in a line.
         full_tag: str | None  # The tag if there is one.
+        task_class: type[TaskNext] | type[TaskWait] | type[TaskNow] | None
 
     test_cases = [
-        TestCase("abcd #w3/2020-09-09 abcd", True, "#w3/2020-09-09"),
-        TestCase("#w3/2020-09-09 abcd", True, "#w3/2020-09-09"),
-        TestCase("#w3/2020-09-09", True, "#w3/2020-09-09"),
-        TestCase(" #w3/2020-09-09", True, "#w3/2020-09-09"),
+        TestCase("abcd #2020-09-09/w3 abcd", True, "#2020-09-09/w3", TaskWait),
+        TestCase("#2020-09-09/w3 abcd", True, "#2020-09-09/w3", TaskWait),
+        TestCase("#2020-09-09/w3", True, "#2020-09-09/w3", TaskWait),
+        TestCase(" #2020-09-09/w3", True, "#2020-09-09/w3", TaskWait),
 
-        TestCase("abcd #x3/2020-09-09 abcd", True, "#x3/2020-09-09"),
-        TestCase("#x3/2020-09-09 abcd", True, "#x3/2020-09-09"),
-        TestCase("#x3/2020-09-09", True, "#x3/2020-09-09"),
-        TestCase(" #x3/2020-09-09", True, "#x3/2020-09-09"),
+        TestCase("abcd #2020-09-09/x3 abcd", True, "#2020-09-09/x3", TaskNext),
+        TestCase("#2020-09-09/x3 abcd", True, "#2020-09-09/x3", TaskNext),
+        TestCase("#2020-09-09/x3", True, "#2020-09-09/x3", TaskNext),
+        TestCase(" #2020-09-09/x3", True, "#2020-09-09/x3", TaskNext),
 
-        TestCase("abcd #n3/2020-09-09 abcd", True, "#n3/2020-09-09"),
-        TestCase("#n3/2020-09-09 abcd", True, "#n3/2020-09-09"),
-        TestCase("#n3/2020-09-09", True, "#n3/2020-09-09"),
-        TestCase(" #n3/2020-09-09", True, "#n3/2020-09-09"),
+        TestCase("abcd #2020-09-09/n3 abcd", True, "#2020-09-09/n3", TaskNow),
+        TestCase("#2020-09-09/n3 abcd", True, "#2020-09-09/n3", TaskNow),
+        TestCase("#2020-09-09/n3", True, "#2020-09-09/n3", TaskNow),
+        TestCase(" #2020-09-09/n3", True, "#2020-09-09/n3", TaskNow),
 
-        TestCase("abcd #n3/2020-09-09: abcd", True, "#n3/2020-09-09"),
-        TestCase("#n3/2020-09-09: abcd", True, "#n3/2020-09-09"),
-        TestCase("#n3/2020-09-09:", True, "#n3/2020-09-09"),
-        TestCase(" #n3/2020-09-09:", True, "#n3/2020-09-09"),
+        TestCase("abcd #2020-09-09/n3: abcd", True, "#2020-09-09/n3", TaskNow),
+        TestCase("#2020-09-09/n3: abcd", True, "#2020-09-09/n3", TaskNow),
+        TestCase("#2020-09-09/n3:", True, "#2020-09-09/n3", TaskNow),
+        TestCase(" #2020-09-09/n3:", True, "#2020-09-09/n3", TaskNow),
 
-        TestCase("#week", False, None),
-        TestCase("#now", False, None),
-        TestCase("#xyz", False, None),
+        TestCase("#week", False, None, None),
+        TestCase("#now", False, None, None),
+        TestCase("#xyz", False, None, None),
     ]
 
     for test_case in test_cases:

@@ -8,7 +8,7 @@ Buy some rinse aid for my dishwasher.
 ```
 2. Add a task tag on that line.
 ```
-#x3/2024-01-05 Buy some rinse aid for my dishwasher.
+#2024-01-05/x3 Buy some rinse aid for my dishwasher.
 ```
 3. Use the command-line tool to browse tasks.
 ```
