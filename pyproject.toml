@@ -91,3 +91,10 @@ wrap_length = 100
 # Personally, I find this option the best. It allows faster debugging and leaving comments
 # for a particular import.
 force_single_line = "True"
+
+# ==================================================================================================
+# isort
+# ==================================================================================================
+[tool.mypy]
+
+strict = true

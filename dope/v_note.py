@@ -41,7 +41,7 @@ class VNote:
                     continue
                 yield VNote(vault_dir, note_path)
 
-    def lines_iter(self, lazy: bool, remove_newline: bool) -> Generator[[int, str], None, None]:
+    def lines_iter(self, lazy: bool, remove_newline: bool) -> Generator[tuple[int, str], None, None]:
         """
         Walk through all lines in a note except code lines.
 

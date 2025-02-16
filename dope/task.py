@@ -194,8 +194,11 @@ def test_task_parse_match_tag() -> None:
         if match is not None:
             full_tag = match.groupdict()["full_tag"]
         if test_case.matches:
+            assert test_case.full_tag is not None
+
             assert match, f"Tag expected in '{test_case.string}'."
             assert full_tag == test_case.full_tag, \
                 f"Tag expected '{test_case.full_tag}', got '{full_tag}'."
+
         else:
             assert not match, f"No tag expected in '{test_case.string}', but got '{full_tag}'."
