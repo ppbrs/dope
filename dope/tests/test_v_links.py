@@ -1,6 +1,7 @@
 """
 This module contains tests for Obsidian vaults.
 """
+import enum
 import logging
 import pathlib
 
@@ -35,20 +36,27 @@ def _exists(link_path: pathlib.PosixPath) -> bool:
     return link_path.exists()
 
 
-def _check_v_link(
+class HyperLinkType(enum.Enum):
+    BROKEN = enum.auto()
+    EXTERNAL = enum.auto()
+    INTERNAL_RELATIVE = enum.auto()
+    INTERNAL_ABSOLUTE = enum.auto()
+
+
+def _check_v_link_validity(
     v_note: VNote,
     line_idx: int,
     hyper_link: HyperLink
-) -> None:
+) -> HyperLinkType:
     """
     Check that the link points to an existing file or note.
 
     For notes, the .md extension may be omitted.
     """
     if hyper_link.is_external():
-        return
+        return HyperLinkType.EXTERNAL
     if hyper_link.uri.startswith("broken:"):
-        return  # A link that no longer valid. This can be an ex Evernote link, Windows file,
+        return HyperLinkType.BROKEN  # A link that no longer valid. This can be an ex Evernote link, Windows file,
         # or a link that was corrupted during the migration from Joplin database.
     assert not hyper_link.uri.startswith("evernote:"), \
         (f"Legacy Evernote link."
@@ -71,6 +79,7 @@ def _check_v_link(
         assert link_path_as_is.exists() or link_path_dot_md.exists(), \
             (f"Int.rel.link does not exist. "
              f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
+        return HyperLinkType.INTERNAL_RELATIVE
     else:
         # Internal absolute link.
         link_path_start = v_note.vault_dir
@@ -81,10 +90,11 @@ def _check_v_link(
         assert link_path_as_is.exists() or link_path_dot_md.exists(), \
             (f"Int.abs.link does not exist. "
              f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
+        return HyperLinkType.INTERNAL_ABSOLUTE
 
 
 @vault_dirs
-def test_v_links(vault_dir: pathlib.PosixPath) -> None:
+def test_v_links_validity(vault_dir: pathlib.PosixPath) -> None:
     """
     Check the correctness of all links in notes.
 
@@ -104,11 +114,40 @@ def test_v_links(vault_dir: pathlib.PosixPath) -> None:
         for line_idx, note_line in v_note.lines_iter(lazy=True, remove_newline=True):
             for md_link in MarkdownLink.collect_iter(line=note_line):
                 num_md_links += 1
-                _check_v_link(v_note=v_note, line_idx=line_idx, hyper_link=md_link)
+                _check_v_link_validity(v_note=v_note, line_idx=line_idx, hyper_link=md_link)
 
             for wk_link in WikiLink.collect_iter(line=note_line):
                 num_wk_links += 1
-                _check_v_link(v_note=v_note, line_idx=line_idx, hyper_link=wk_link)
+                _check_v_link_validity(v_note=v_note, line_idx=line_idx, hyper_link=wk_link)
 
     _logger.info("%d Markdown links were found and checked", num_md_links)
     _logger.info("%d Wiki links were found", num_wk_links)
+
+
+@vault_dirs
+def test_v_links_resources(vault_dir: pathlib.PosixPath) -> None:
+    """
+    Check that a resource referenced by a hyperlink is the local "res" directory.
+    """
+
+    num_res_checked = 0
+    num_res_errors = 0
+    for v_note in VNote.collect_iter(vault_dirs=[vault_dir], exclude_trash=True):
+        for line_idx, note_line in v_note.lines_iter(lazy=True, remove_newline=True):
+            for hyper_link in MarkdownLink.collect_iter(line=note_line):
+                num_res_checked += 1
+                match _check_v_link_validity(v_note=v_note, line_idx=line_idx, hyper_link=hyper_link):
+                    case HyperLinkType.EXTERNAL:
+                        pass
+                    case HyperLinkType.INTERNAL_RELATIVE:
+                        pass
+                    case HyperLinkType.INTERNAL_ABSOLUTE:
+                        note_dir_path = v_note.note_path.relative_to(v_note.vault_dir).parent
+                        note_res_path = note_dir_path / "res"
+                        file_dir_path = pathlib.Path(hyper_link.uri).parent
+                        if note_res_path != file_dir_path:
+                            _logger.error("%s: line %d: Resource is not in local 'res' ('%s')", v_note.note_path.name, line_idx, file_dir_path)
+                            num_res_errors += 1
+                        # return
+                        pass
+    _logger.info("%d hyper-links were found and checked, %d problems.", num_res_checked, num_res_errors)
