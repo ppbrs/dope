@@ -115,8 +115,10 @@ def test_v_settings_app(vault_dir: pathlib.PosixPath) -> None:
         "alwaysUpdateLinks": True,
         # Don't use [[Wikilinks]], generate Markdown links instead:
         "useMarkdownLinks": True,
-
-
+        # Show files with all extensions: Yes:
+        # Previously, a lot of useful files could not be easily found or opened.
+        # Moreover, when I see all the files, it's easier to understand the situation in the directory.
+        "showUnsupportedFiles": True,
     }
 
     v_name = vault_dir.stem
