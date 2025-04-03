@@ -17,13 +17,6 @@ for v_dir in V_DIRS:
     assert v_dir.exists() and v_dir.is_dir()
 
 #
-# Obsidian Application
-#
-
-OBSIDIAN_APP_PATH = PosixPath("/opt/Obsidian-1.5.3.AppImage")
-assert OBSIDIAN_APP_PATH.exists() and OBSIDIAN_APP_PATH.is_file()
-
-#
 # Rover
 #
 

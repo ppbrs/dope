@@ -12,7 +12,6 @@ from typing import Any
 
 import psutil
 
-from dope.paths import OBSIDIAN_APP_PATH
 from dope.paths import V_DIRS
 
 _logger = logging.getLogger(__name__)
@@ -23,7 +22,6 @@ class Ide(enum.Enum):
     """Enum for all supported IDEs."""
     SUBLIME_TEXT = enum.auto()
     VSCODE = enum.auto()
-    OBSIDIAN = enum.auto()
 
     @classmethod
     def from_arg(cls, arg: str) -> Ide:
@@ -33,8 +31,6 @@ class Ide(enum.Enum):
                 return Ide.SUBLIME_TEXT
             case "code":
                 return Ide.VSCODE
-            case "obs":
-                return Ide.OBSIDIAN
             case _:
                 raise ValueError(f"Unknown IDE: {arg}.")
 
@@ -53,9 +49,6 @@ class Ide(enum.Enum):
                     os.system(f"subl {subl_prj}")
                 else:
                     _logger.error("Cannot open `%s` in `Sublime Text`.", vault_dir.name)
-            case Ide.OBSIDIAN:
-                _logger.warning("Opening a vault in Obsidian is not implemented yet.")
-                os.system(f"{OBSIDIAN_APP_PATH} >/dev/null 2>&1 & disown")
 
 
 class VaultUtils:
