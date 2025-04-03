@@ -4,8 +4,8 @@ import argparse
 import logging
 from typing import Any
 
+from dope.config import get_vault_paths
 from dope.dope_cli.pomodoro import Pomodoro
-from dope.paths import V_DIRS
 
 _logger = logging.getLogger(__name__)
 
@@ -60,6 +60,20 @@ def parse_args() -> dict[str, Any]:
     # Vaults related:
     #
     prsr.add_argument(
+        "--config-vault-add", dest="config_vault_add",
+        nargs="+",
+        action="store",
+        help=("Add given vault directories to the configuration."))
+    prsr.add_argument(
+        "--config-vault-list", dest="config_vault_list",
+        action="store_true",
+        help=("List vault directories."))
+    prsr.add_argument(
+        "--config-vault-drop", dest="config_vault_drop",
+        nargs="+",
+        action="store",
+        help=("Remove given vault directory from the configuration."))
+    prsr.add_argument(
         "-i", "--ide", dest="ide",
         nargs="*",  # The result is None or a list.
         action="store",
@@ -103,7 +117,7 @@ def parse_args() -> dict[str, Any]:
         "Either omit it or provide a non-empty list of tokens.")
     if vault_filter is not None:
         empty = True
-        vault_names = [v_dir.name for v_dir in V_DIRS]
+        vault_names = [v_dir.name for v_dir in get_vault_paths()]
         for token in vault_filter:
             if any(token in vault_name for vault_name in vault_names):
                 empty = False

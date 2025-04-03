@@ -12,7 +12,7 @@ from typing import Any
 
 import psutil
 
-from dope.paths import V_DIRS
+from dope.config import get_vault_paths
 
 _logger = logging.getLogger(__name__)
 
@@ -62,9 +62,9 @@ class VaultUtils:
         """
         vault_filter: None | list[str] = args["vault"]
         if vault_filter is None:
-            return list(V_DIRS)
+            return list(get_vault_paths())
         vault_dirs = []
-        for vault_dir in V_DIRS:
+        for vault_dir in get_vault_paths():
             for vault_substr in vault_filter:
                 if vault_substr in vault_dir.name:
                     vault_dirs.append(vault_dir)
@@ -150,11 +150,12 @@ class VaultUtils:
 
 def test_vault_utils_filter_vault_dirs() -> None:
     """Check VaultUtils().filter_vault_dirs method."""
-    assert VaultUtils().filter_vault_dirs(args={"vault": None}) == V_DIRS
+    assert VaultUtils().filter_vault_dirs(args={"vault": None}) == get_vault_paths()
     assert VaultUtils().filter_vault_dirs(args={"vault": ["z"]}) == [
         pathlib.PosixPath("~/projects/z").expanduser()]
     assert VaultUtils().filter_vault_dirs(args={"vault": ["v"]}) == [
         pathlib.PosixPath("~/Dropbox/the-vault").expanduser()]
     assert VaultUtils().filter_vault_dirs(args={"vault": ["z", "f"]}) == [
+        pathlib.PosixPath("~/Dropbox/projects/fl").expanduser(),
         pathlib.PosixPath("~/projects/z").expanduser(),
-        pathlib.PosixPath("~/Dropbox/projects/fl").expanduser()]
+    ]

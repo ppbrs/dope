@@ -1,7 +1,7 @@
 """Common code for tests."""
 import pytest
 
-from dope.paths import V_DIRS
+from dope.config import get_vault_paths
 
 # Notes and other files cannot contain these symbols:
 RESERVED_SYMBOLS = ["`", "[", "]", "'", "\""]
@@ -9,6 +9,6 @@ RESERVED_SYMBOLS = ["`", "[", "]", "'", "\""]
 # pytest parametrization iterating over all configured vaults.
 vault_dirs = pytest.mark.parametrize(
     argnames="vault_dir",
-    argvalues=V_DIRS,
-    ids=[v_dir.name for v_dir in V_DIRS],
+    argvalues=get_vault_paths(),
+    ids=[v_dir.name for v_dir in get_vault_paths()],
 )

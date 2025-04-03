@@ -2,9 +2,10 @@
 
 ## Sources of data
 
-After dropping the support of Joplin databases, `dope` tracks only my Obsidian vaults.
+After dropping the support of Joplin databases in 2024, `dope` tracks only my Obsidian vaults.
 
-Paths are set in `dope/paths.py`.
+The list of active vaults is in `~/.config/dope/vaults.json`.
+You can add a vault using command `--config-vault-add`, remove a vault with `--config-vault-drop`, and see the list with `--config-vault-list`.
 
 ## GTD-inspired task tracker
 
