@@ -2,11 +2,11 @@
 Executing user requests related to synchronizing vaults with my smartphone.
 """
 import logging
+import os
 import subprocess as sp
 from pathlib import PosixPath
 from typing import Any
 
-from dope.paths import ROVER_BASE_PATH
 from dope.term import Term
 
 from .vault_utils import VaultUtils
@@ -278,7 +278,8 @@ class RoverSync:
         /run/user/<user>/gvfs/<mtp>/<storage-type>/vaults
         """
         mtp_dir = cls._find_rover_path_one_level(
-            path=ROVER_BASE_PATH, glob="mtp:*", level_name="MTP filesystems")
+            path=PosixPath(f"/run/user/{os.getuid()}/gvfs/"),
+            glob="mtp:*", level_name="MTP filesystems")
         if mtp_dir is None:
             return None
         print(f"'{mtp_dir.name}' chosen")
