@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import pathlib
 import random
-from collections.abc import Generator
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -56,7 +56,7 @@ class Lesson:
         return lessons
 
     @classmethod
-    def _parse_line(cls, note_line: str, v_note: VNote) -> Generator[Lesson, None, None]:
+    def _parse_line(cls, note_line: str, v_note: VNote) -> Iterator[Lesson]:
         """Collect all lessons from the given line."""
         if "#edu/" not in note_line:
             return
