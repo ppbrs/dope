@@ -34,7 +34,7 @@ class Lesson:
     def collect(cls, vault_dirs: list[pathlib.PosixPath]) -> list[Lesson]:
         """ Find all lessons in all vaults.
 
-        A line of the form "... #edu/{course}/{size}/{action} {descr}" is considered a lesson.
+        A line of the form "... #edu/{course}/{size}/{action}[:] {descr}" is considered a lesson.
         """
         lessons: list[Lesson] = []
 
@@ -64,7 +64,7 @@ class Lesson:
         note_line = note_line.replace("\r", "").replace("\n", "")
         for word in note_line.split(" "):
             if word.startswith("#edu/"):
-                tag = word
+                tag = word[:-1] if word.endswith(":") else word
                 tag_comps = tag.split("/")
                 assert len(tag_comps) == 4, \
                     (f"Tag `{word}` in `{v_note.note_path.name}` has wrong number of components "
