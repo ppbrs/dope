@@ -74,7 +74,7 @@ class Lesson:
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
                 descr = Task.clean_line(note_line.replace(tag, ""))
-                if action not in {"x", "n", "w"}:
+                if action.lower() not in {"x", "n", "w"}:
                     _logger.warning("Unrecognized lesson action `%s` in %s (%s/%s: %s)",
                                     action, tag, vault, note, descr)
                 yield Lesson(vault=vault, note=note, tag=tag, descr=descr,
@@ -117,11 +117,11 @@ class EduTracker:
                               if stsk.course == course and stsk.size == size)
                 for action in sorted(actions):
                     if action == "x":
-                        action_str = Term.yellow(action)
+                        action_str = Term.yellow(action.upper())
                     elif action == "n":
-                        action_str = Term.green(action)
+                        action_str = Term.green(action.upper())
                     elif action == "w":
-                        action_str = Term.red(action)
+                        action_str = Term.red(action.upper())
                     else:
                         action_str = action
                     print(f"\t\t{action_str}")
