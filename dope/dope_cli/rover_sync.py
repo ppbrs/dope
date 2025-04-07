@@ -7,9 +7,8 @@ import subprocess as sp
 from pathlib import PosixPath
 from typing import Any
 
+from dope.config import get_vault_paths
 from dope.term import Term
-
-from .vault_utils import VaultUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -34,8 +33,7 @@ class RoverSync:
         if rover_path is None:
             return -1
 
-        vault_dirs = VaultUtils.filter_vault_dirs(args)
-
+        vault_dirs = get_vault_paths(filter=args["vault"])
         _logger.info("VAULTs: %s.", ", ".join(v.name for v in vault_dirs))
 
         for bvdir in vault_dirs:

@@ -105,11 +105,8 @@ class VaultUtils:
         _logger.info("IDEs: %s", ides)
         _logger.info("IDEs: %s.", ", ".join(str(ide) for ide in ides))
 
-        # Find out which vaults will be opened.
-        vault_dirs = cls.filter_vault_dirs(args=args)
-
         # Open the vaults in the IDEs.
-        for vault_dir in vault_dirs:
+        for vault_dir in get_vault_paths(filter=args["vault"]):
             for ide in ides:
                 ide.open_vault(vault_dir=vault_dir)
         return 0
@@ -136,7 +133,7 @@ class VaultUtils:
     @classmethod
     def _process_stat(cls, args: dict[str, Any]) -> int:
         """Show vaults' statistics."""
-        for vault_dir in cls.filter_vault_dirs(args=args):
+        for vault_dir in get_vault_paths(filter=args["vault"]):
             print(f"{vault_dir.name} statistics:")
 
             # Getting directory size
@@ -146,16 +143,3 @@ class VaultUtils:
 
             print()
         return 0
-
-
-def test_vault_utils_filter_vault_dirs() -> None:
-    """Check VaultUtils().filter_vault_dirs method."""
-    assert VaultUtils().filter_vault_dirs(args={"vault": None}) == get_vault_paths()
-    assert VaultUtils().filter_vault_dirs(args={"vault": ["z"]}) == [
-        pathlib.PosixPath("~/projects/z").expanduser()]
-    assert VaultUtils().filter_vault_dirs(args={"vault": ["v"]}) == [
-        pathlib.PosixPath("~/Dropbox/the-vault").expanduser()]
-    assert VaultUtils().filter_vault_dirs(args={"vault": ["z", "f"]}) == [
-        pathlib.PosixPath("~/Dropbox/projects/fl").expanduser(),
-        pathlib.PosixPath("~/projects/z").expanduser(),
-    ]

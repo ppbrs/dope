@@ -10,7 +10,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
-from dope.dope_cli.vault_utils import VaultUtils
+from dope.config import get_vault_paths
 from dope.task import Task
 from dope.term import Term
 from dope.v_note import VNote
@@ -99,7 +99,7 @@ class EduTracker:
         if not args["edu"]:
             return self.ret_val
 
-        vault_dirs = VaultUtils().filter_vault_dirs(args=args)
+        vault_dirs = get_vault_paths(filter=args["vault"])
         lessons: list[Lesson] = Lesson.collect(vault_dirs=vault_dirs)
 
         courses = set(stsk.course for stsk in lessons)

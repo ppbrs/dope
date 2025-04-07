@@ -13,22 +13,33 @@ import platformdirs
 _logger = logging.getLogger(__name__)
 
 
-def get_vault_paths() -> list[PosixPath]:
+def get_vault_paths(filter: None | list[str] = None) -> list[PosixPath]:
     """
-    Return contents of vaults.json converted to a list of PosixPath objects.
+    Return contents of vaults.json converted to a list of PosixPath objects
+    and filtered according to the optional filter.
     """
     vaults_json_path = _get_vaults_json_path()
-    if vaults_json_path.exists():
-        with open(vaults_json_path, "rb") as fp:
-            vaults = json.load(fp=fp)
-        if vaults == []:
-            _logger.warning("Vaults configuration is empty.")
-        vault_paths = [PosixPath(vault) for vault in vaults]
-    else:
+    if not vaults_json_path.exists():
         _logger.warning("Vaults configuration doesn't exist; creating.")
-        vault_paths = []
-        _write_vaults_json(vault_paths)
-    return vault_paths
+        _write_vaults_json([])
+        return []
+
+    with open(vaults_json_path, "rb") as fp:
+        vaults = json.load(fp=fp)
+    if vaults == []:
+        _logger.warning("Vaults configuration is empty.")
+        return []
+
+    vault_paths = [PosixPath(vault) for vault in vaults]
+    if filter is None:
+        return vault_paths
+
+    vault_paths_filtered = []
+    for vault_path in vault_paths:
+        for vault_substr in filter:
+            if vault_substr in vault_path.name:
+                vault_paths_filtered.append(vault_path)
+    return vault_paths_filtered
 
 
 def add_vault(vault_path: PosixPath) -> bool:

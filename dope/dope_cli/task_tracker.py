@@ -4,7 +4,7 @@ Executing user requests related to tasks.
 import logging
 from typing import Any
 
-from dope.dope_cli.vault_utils import VaultUtils
+from dope.config import get_vault_paths
 from dope.task import Task
 from dope.task import TaskNext
 from dope.task import TaskNow
@@ -30,7 +30,7 @@ class TaskTracker:
         if not any((args["tasks_next"], args["tasks_wait"], args["tasks_now"], args["tasks_all"])):
             return self.ret_val
 
-        vault_dirs = VaultUtils().filter_vault_dirs(args=args)
+        vault_dirs = get_vault_paths(filter=args["vault"])
         tasks = Task.collect(vault_dirs=vault_dirs)
 
         tasks = self._filter_by_type(tasks=tasks, args=args)
