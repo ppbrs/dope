@@ -13,9 +13,6 @@ import psutil
 from colorama import Fore
 from colorama import Style
 
-gi.require_version("Notify", "0.7")
-from gi.repository import Notify  # type: ignore
-
 
 @dataclasses.dataclass
 class _TimerInfo:
@@ -167,12 +164,19 @@ def launch_timer() -> int:
     tmr_name = sys.argv[2]
     time.sleep(tout_min * 60)
 
-    Notify.init(__name__)
-    notification = Notify.Notification.new(
-        summary="🍅 pomodoro",
-        body=f"{tout_min} minutes elapsed for `{tmr_name}`."
+    sp.run(
+        [
+            "notify-send",
+            "-u",
+            "critical",
+            "-a",
+            "DOPE",
+            "🍅 pomodoro", 
+            f"{tout_min} minutes elapsed for `{tmr_name}` (pid={os.getpid()})."],
+        shell=False,
+        check=True,
+        capture_output=False,
     )
-    notification.show()
     return 0
 
 

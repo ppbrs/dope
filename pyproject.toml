@@ -20,8 +20,6 @@ dependencies = [
 	"types-colorama >= 0.4",
 	"pylama >= 8.4.1",
 	"pyright >= 1.1",
-
-	"PyGObject >= 3.50",  # requires libgirepository1.0-dev for some reason
 ]
 
 # For a complete list of classifiers, see https://pypi.org/classifiers/.
