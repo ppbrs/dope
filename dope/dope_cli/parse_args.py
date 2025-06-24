@@ -93,6 +93,10 @@ def parse_args() -> dict[str, Any]:
         "--stat", dest="stat",
         action="store_true",
         help="Show vault statistics.")
+    prsr.add_argument(
+        "--vector", dest="vector",
+        action="store_true",
+        help="Find all descriptions of vector images and regenerate them.")
 
     #
     # Education related:
