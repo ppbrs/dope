@@ -27,14 +27,13 @@ class Lesson:
     note: str
     tag: str
     course: str
-    size: str
     action: str
 
     @classmethod
-    def collect(cls, vault_dirs: list[pathlib.PosixPath]) -> list[Lesson]:
+    def collect(cls, vault_dirs: list[pathlib.PosixPath], course_filter: list[str]) -> list[Lesson]:
         """ Find all lessons in all vaults.
 
-        A line of the form "... #edu/{course}/{size}/{action}[:] {descr}" is considered a lesson.
+        A line of the form "... #edu/{course}/{action}[:] {descr}" is considered a lesson.
         """
         lessons: list[Lesson] = []
 
@@ -48,9 +47,15 @@ class Lesson:
                     in_code_block = not in_code_block
                 if not in_code_block:
                     num_lines += 1
-                    for task in cls._parse_line(note_line=note_line, v_note=v_note):
-                        lessons.append(task)
-                        _logger.info("%s", task)
+                    for lesson in cls._parse_line(note_line=note_line, v_note=v_note):
+                        if not course_filter:
+                            lessons.append(lesson)
+                        else:
+                            for word in course_filter:
+                                if word in lesson.course:
+                                    lessons.append(lesson)
+                                    break
+                        _logger.info("%s", lesson)
         _logger.debug("Checked %d lines, collected %d lessons", num_lines, len(lessons))
 
         return lessons
@@ -66,19 +71,22 @@ class Lesson:
             if word.startswith("#edu/"):
                 tag = word[:-1] if word.endswith(":") else word
                 tag_comps = tag.split("/")
-                assert len(tag_comps) == 4, \
+                num_tag_comps = len("#edu/course/action".split("/"))
+                if len(tag_comps) < num_tag_comps:
+                    continue
+                assert len(tag_comps) == num_tag_comps, \
                     (f"Tag `{word}` in `{v_note.note_path.name}` has wrong number of components "
-                     f"(got {len(tag_comps)}, expected 4).")
-                _, course, size, action = tag_comps
+                     f"(got {len(tag_comps)}, expected {num_tag_comps}).")
+                _, course, action = tag_comps
 
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
                 descr = Task.clean_line(note_line.replace(tag, ""))
-                if action.lower() not in {"x", "n", "w"}:
+                if action.lower() not in {"x", "n", "w", "big"}:
                     _logger.warning("Unrecognized lesson action `%s` in %s (%s/%s: %s)",
                                     action, tag, vault, note, descr)
                 yield Lesson(vault=vault, note=note, tag=tag, descr=descr,
-                             course=course, size=size, action=action)
+                             course=course, action=action)
 
 
 class EduTracker:
@@ -96,44 +104,40 @@ class EduTracker:
         """
         Executing user's requests related to educational tasks.
         """
-        if not args["edu"]:
+        if args["edu"] is None:
             return self.ret_val
 
         vault_dirs = get_vault_paths(filter=args["vault"])
-        lessons: list[Lesson] = Lesson.collect(vault_dirs=vault_dirs)
+        lessons: list[Lesson] = Lesson.collect(vault_dirs=vault_dirs, course_filter=args["edu"])
 
         courses = set(stsk.course for stsk in lessons)
         _logger.debug("Courses: %s.", courses)
 
         print(Term.green("LESSONS:"))
 
-        # Print as course -> size -> action -> vault -> note -> description.
+        # Print as course -> action -> vault -> note -> description.
         for course in sorted(courses):
             print(f"{course}")
-            sizes = set(stsk.size for stsk in lessons if stsk.course == course)
-            for size in sorted(sizes):
-                print(f"\t{size}")
-                actions = set(stsk.action for stsk in lessons
-                              if stsk.course == course and stsk.size == size)
-                for action in sorted(actions):
-                    if action == "x":
-                        action_str = Term.yellow(action.upper())
-                    elif action == "n":
-                        action_str = Term.green(action.upper())
-                    elif action == "w":
-                        action_str = Term.red(action.upper())
-                    else:
-                        action_str = action
-                    print(f"\t\t{action_str}")
-                    filtered = [stsk for stsk in lessons
-                                if (stsk.course == course
-                                    and stsk.size == size
-                                    and stsk.action == action)]
-                    random.shuffle(filtered)
-                    for stsk in filtered:
-                        print(f"\t\t\t{stsk.vault}/", end="")
-                        print(f"{Term.underline(Term.bold(stsk.note))}: ", end="")
-                        print(f"{stsk.descr}.")
+            actions = set(stsk.action for stsk in lessons
+                          if stsk.course == course)
+            for action in sorted(actions):
+                if action in {"x", "big"}:
+                    action_str = Term.yellow(action.upper())
+                elif action == "n":
+                    action_str = Term.green(action.upper())
+                elif action == "w":
+                    action_str = Term.red(action.upper())
+                else:
+                    action_str = action.upper()
+                print(f"\t\t{action_str}")
+                filtered = [stsk for stsk in lessons
+                            if (stsk.course == course
+                                and stsk.action == action)]
+                random.shuffle(filtered)
+                for stsk in filtered:
+                    print(f"\t\t\t{stsk.vault}/", end="")
+                    print(f"{Term.underline(Term.bold(stsk.note))}: ", end="")
+                    print(f"{stsk.descr}.")
 
         return self.ret_val
 

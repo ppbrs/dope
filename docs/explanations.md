@@ -32,6 +32,19 @@ Examples of task lines:
 `* [ ] #2024-09-10/n2: Do the thing C.`
 
 ***
+## Lesson tracker
+
+Lesson lines have a tag with the format `#edu/<course>/<action>`.
+
+Action:
+* `x` for lessons that can be learned,
+* `n` for lessons that are being learned,
+* `w` for lessons that can be learned after some other lesson,
+* `big` for big lessons not yet split into digestible chunks.
+
+Command `dope --edu` with optional course filter and vault filter will list lessons. 
+
+***
 ## Rover and base
 
 A **rover** is a smartphone with a copy of a vault saved in its filesystem; a **base** is a computer with a vault in its filesystem.
