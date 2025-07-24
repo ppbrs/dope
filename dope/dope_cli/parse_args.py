@@ -103,7 +103,8 @@ def parse_args() -> dict[str, Any]:
     #
     prsr.add_argument(
         "-e", "--edu", dest="edu",
-        action="store_true",
+        nargs="*",  # The result is None or a list.
+        action="store",
         help="List all education tasks: lessons and quizzes.")
 
     #
