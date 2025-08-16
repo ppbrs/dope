@@ -41,11 +41,15 @@ class Pomodoro:
             Pomodoro._start(args["pomodoro_start"])
 
         tmr_info_arr: list[_TimerInfo] = Pomodoro._find_all()
+        if not tmr_info_arr:
+            print("No active pomodoro timers found.\n")
+            return 0
+
         if args["pomodoro_list"] or start_command:
             Pomodoro._print_all(tmr_info_arr)
 
         if args["pomodoro_kill"] is not None:
-            Pomodoro._kill(args["pomodoro_kill"], tmr_info_arr)
+            Pomodoro._kill(pid_parts=args["pomodoro_kill"], tmr_info_arr=tmr_info_arr)
 
         return 0
 
@@ -67,10 +71,9 @@ class Pomodoro:
             action="store_true",  # The result is a boolean.
             help="List all active timers.")
         parser.add_argument(
-            "-pk", "--pomodoro-kill",
-            dest="pomodoro_kill",
-            nargs="?",  # The result the result is either None or a string.
-            help="Kill a timer.")
+            "-pk", "--pomodoro-kill", dest="pomodoro_kill",
+            nargs="*",  # The result is either None or a list containing two strings.
+            help="Kill a timer. Parameters are any fragments of timers' PIDs.")
 
     @staticmethod
     def _start(pomodoro_start: list[str]) -> None:
@@ -114,9 +117,6 @@ class Pomodoro:
 
     @staticmethod
     def _print_all(tmr_info_arr: list[_TimerInfo]) -> None:
-        if not tmr_info_arr:
-            print("No active pomodoro timers found:")
-            return
         tmr_cnt = len(tmr_info_arr)
         print(
             str(tmr_cnt) + " active pomodoro timer" + ("s" if tmr_cnt > 1 else "")
@@ -139,9 +139,10 @@ class Pomodoro:
             print(tmr_str)
 
     @staticmethod
-    def _kill(pid_part: str, tmr_info_arr: list[_TimerInfo]) -> None:
+    def _kill(pid_parts: list[str], tmr_info_arr: list[_TimerInfo]) -> None:
+        killed_any = False
         for tmr_info in tmr_info_arr:
-            if pid_part in str(tmr_info.pid):
+            if any(s in str(tmr_info.pid) for s in pid_parts):
                 time_expire = tmr_info.t_start + tmr_info.tout_min * 60
                 time_to_run = time_expire - time.time()
                 time_to_run_str = time.strftime("%H:%M:%S", time.gmtime(time_to_run))
@@ -154,6 +155,9 @@ class Pomodoro:
                 )
                 print(kill_msg)
                 os.kill(tmr_info.pid, signal.SIGKILL)
+                killed_any = True
+        if not killed_any:
+            print(f"{len(tmr_info_arr)} timers are still running. Could not find timers to kill.")
 
 
 def launch_timer() -> int:
