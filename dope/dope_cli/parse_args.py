@@ -102,7 +102,7 @@ def parse_args() -> dict[str, Any]:
         action="store_true",
         help="List all education tasks: lessons and quizzes.")
 
-    Pomodoro().add_arguments(parser=prsr)
+    Pomodoro.add_arguments(parser=prsr)
 
     args = prsr.parse_args().__dict__
 

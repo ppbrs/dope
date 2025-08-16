@@ -50,7 +50,7 @@ def dope_cli() -> int:
         ret_val: int = TaskTracker().process(args=args)
         ret_val += EduTracker().process(args=args)
         ret_val += VaultUtils().process(args=args)
-        ret_val += Pomodoro().process(args=args)
+        ret_val += Pomodoro.process(args=args)
         ret_val += RoverSync.process(args=args)
         ret_val += process_arguments(args=args)
 

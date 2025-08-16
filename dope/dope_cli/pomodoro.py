@@ -31,19 +31,20 @@ class Pomodoro:
     TOUT_MIN_MAX = 180  # Maximal timer timeout, in minutes.
     TMR_NAME_DEFAULT = "default"  # Default timer name.
 
-    def process(self, args: dict[str, Any]) -> int:
+    @staticmethod
+    def process(args: dict[str, Any]) -> int:
         """
         Executing user's requests related to tasks.
         """
         if args["pomodoro_start"] is not None:
-            self._start(args["pomodoro_start"])
+            Pomodoro._start(args["pomodoro_start"])
 
-        tmr_info_arr: list[_TimerInfo] = self._find_all()
+        tmr_info_arr: list[_TimerInfo] = Pomodoro._find_all()
         if args["pomodoro_list"]:
-            self._print_all(tmr_info_arr)
+            Pomodoro._print_all(tmr_info_arr)
 
         if args["pomodoro_kill"] is not None:
-            self._kill(args["pomodoro_kill"], tmr_info_arr)
+            Pomodoro._kill(args["pomodoro_kill"], tmr_info_arr)
 
         return 0
 
