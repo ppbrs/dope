@@ -8,7 +8,6 @@ import sys
 import time
 from typing import Any
 
-import gi  # type: ignore
 import psutil
 from colorama import Fore
 from colorama import Style
