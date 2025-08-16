@@ -36,11 +36,12 @@ class Pomodoro:
         """
         Executing user's requests related to tasks.
         """
-        if args["pomodoro_start"] is not None:
+        start_command = args["pomodoro_start"] is not None
+        if start_command:
             Pomodoro._start(args["pomodoro_start"])
 
         tmr_info_arr: list[_TimerInfo] = Pomodoro._find_all()
-        if args["pomodoro_list"]:
+        if args["pomodoro_list"] or start_command:
             Pomodoro._print_all(tmr_info_arr)
 
         if args["pomodoro_kill"] is not None:
@@ -90,7 +91,7 @@ class Pomodoro:
         # pylint: disable-next=consider-using-with
         child = sp.Popen(args=["python3", __file__, str(tout_min), tmr_name])
 
-        print(f"Started a {tout_min}-minute pomodoro timer `{tmr_name}` (pid={child.pid}).")
+        print(f"Started a {tout_min}-minute pomodoro timer `{tmr_name}` (pid={child.pid}).\n")
 
     @staticmethod
     def _find_all() -> list[_TimerInfo]:
