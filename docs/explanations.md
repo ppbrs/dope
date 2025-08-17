@@ -59,3 +59,8 @@ Examples:
 The vault files then reside in `vaults/<vault-name>`.
 
 ***
+## Check list
+
+Check list file is a spreadsheet that is opened `dope -cl` command is received.
+
+***

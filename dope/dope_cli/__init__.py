@@ -4,9 +4,11 @@ dope_cli submodule
 import logging
 import os
 import pathlib
+import subprocess as sp
 import sys
+from pprint import pformat
 
-from dope.config import get_vault_paths
+from dope.config import get_config, get_vault_paths
 from dope.dope_cli.config import process_arguments
 from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.parse_args import parse_args
@@ -41,6 +43,9 @@ def dope_cli() -> int:
         _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
 
         # Report configuration.
+        _logger.info("Configuration:")
+        for line in pformat(get_config()).split("\n"):
+            _logger.info(line)
         if get_vault_paths():
             _logger.info(
                 "Configured vaults (%d): %s.",
@@ -55,6 +60,28 @@ def dope_cli() -> int:
         ret_val += RoverSync.process(args=args)
         ret_val += Vector.process(args=args)
         ret_val += process_arguments(args=args)
+
+        if args["check_list"]:
+            cl_path = get_config().get("check-list")
+            if cl_path is None:
+                print("Check list not configured.")
+            else:
+                cl_path = pathlib.PosixPath(cl_path)
+                if not cl_path.exists():
+                    print(f"Check list doesn't exist: '{cl_path}'")
+                else:
+                    proc: sp.Popen[str] = sp.Popen(
+                        ["xdg-open", str(cl_path)],
+                        shell=False,
+                        text=True,
+                        stdout=sp.PIPE,
+                        stderr=sp.PIPE,
+                    )
+                    if proc.returncode:
+                        print(f"Opening '{cl_path}' with xdg-open failed, returned {proc.returncode}")
+                    else:
+                        print(f"Opening '{cl_path}' with xdg-open OK")
+
 
         if args["test"]:
             dope_root_dir = pathlib.PosixPath(__file__).parent.parent.parent
