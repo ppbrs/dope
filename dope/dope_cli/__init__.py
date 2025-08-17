@@ -5,8 +5,11 @@ import logging
 import os
 import pathlib
 import sys
+from pprint import pformat
 
+from dope.config import get_config
 from dope.config import get_vault_paths
+from dope.dope_cli.check_list import process_check_list
 from dope.dope_cli.config import process_arguments
 from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.parse_args import parse_args
@@ -40,6 +43,9 @@ def dope_cli() -> int:
         _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
 
         # Report configuration.
+        _logger.info("Configuration:")
+        for line in pformat(get_config()).split("\n"):
+            _logger.info(line)
         if get_vault_paths():
             _logger.info(
                 "Configured vaults (%d): %s.",
@@ -53,6 +59,7 @@ def dope_cli() -> int:
         ret_val += Pomodoro.process(args=args)
         ret_val += RoverSync.process(args=args)
         ret_val += process_arguments(args=args)
+        ret_val += process_check_list(args=args)
 
         if args["test"]:
             dope_root_dir = pathlib.PosixPath(__file__).parent.parent.parent

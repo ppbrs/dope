@@ -102,6 +102,14 @@ def parse_args() -> dict[str, Any]:
         action="store_true",
         help="List all education tasks: lessons and quizzes.")
 
+    #
+    # Other
+    #
+    prsr.add_argument(
+        "-cl", "--check-list", dest="check_list",
+        action="store_true",
+        help="Open the check-list file.")
+
     Pomodoro.add_arguments(parser=prsr)
 
     args = prsr.parse_args().__dict__
