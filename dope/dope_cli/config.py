@@ -11,8 +11,7 @@ from dope.config import get_vault_paths
 
 
 def process_arguments(args: dict[str, Any]) -> int:
-    """
-    """
+    """Process arguments related to vaults configuration."""
     assert "config_vault_add" in args
     assert "config_vault_list" in args
     assert "config_vault_drop" in args
