@@ -7,6 +7,7 @@ Configuration files:
 import json
 import logging
 from pathlib import PosixPath
+from typing import Any
 
 import platformdirs
 
@@ -81,3 +82,17 @@ def _get_vaults_json_path() -> PosixPath:
     config_dir_path = PosixPath(platformdirs.user_config_dir("dope"))
     config_dir_path.mkdir(parents=True, exist_ok=True)
     return config_dir_path / "vaults.json"
+
+def get_config() -> dict[str, Any]:
+    config_dir_path = PosixPath(platformdirs.user_config_dir("dope"))
+    config_dir_path.mkdir(parents=True, exist_ok=True)
+    config_file_path = config_dir_path / "config.json"
+    if not config_file_path.exists():
+        with config_file_path.open("w") as fp:
+            fp.write("{}\n")
+        return {}
+    with config_file_path.open("rb") as fp:
+        config = json.load(fp=fp)
+    if not isinstance(config, dict):
+        raise TypeError
+    return config
