@@ -37,15 +37,18 @@ class Pomodoro:
         Executing user's requests related to tasks.
         """
         start_command = args["pomodoro_start"] is not None
+        list_command = args["pomodoro_list"]
+        kill_command = args["pomodoro_kill"] is not None
+
         if start_command:
             Pomodoro._start(args["pomodoro_start"])
 
         tmr_info_arr: list[_TimerInfo] = Pomodoro._find_all()
-        if not tmr_info_arr:
+        if (start_command or list_command or kill_command) and not tmr_info_arr:
             print("No active pomodoro timers found.\n")
             return 0
 
-        if args["pomodoro_list"] or start_command:
+        if list_command or start_command:
             Pomodoro._print_all(tmr_info_arr)
 
         if args["pomodoro_kill"] is not None:
