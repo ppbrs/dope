@@ -39,8 +39,7 @@ def _exists(link_path: pathlib.PosixPath) -> bool:
 class HyperLinkType(enum.Enum):
     BROKEN = enum.auto()
     EXTERNAL = enum.auto()
-    INTERNAL_RELATIVE = enum.auto()
-    INTERNAL_ABSOLUTE = enum.auto()
+    INTERNAL = enum.auto()
 
 
 def _check_v_link_validity(
@@ -52,6 +51,8 @@ def _check_v_link_validity(
     Check that the link points to an existing file or note.
 
     For notes, the .md extension may be omitted.
+
+    :param hyper_link: hyper_link.uri may be changed if the link is relative.
     """
     if hyper_link.is_external():
         return HyperLinkType.EXTERNAL
@@ -71,15 +72,21 @@ def _check_v_link_validity(
 
     if hyper_link.uri.startswith("./") or (hyper_link.uri.startswith("../")):
         # Internal relative link.
+        # e.g. '../../_resources/ecfa7cf0d551039c07863c011e388191.png'
         link_path_start = v_note.note_path.parent
         link_path_end_as_is = pathlib.PosixPath(hyper_link.uri)
-        link_path_as_is = link_path_start / link_path_end_as_is
-        link_path_end_dot_md = pathlib.PosixPath(hyper_link.uri + ".md")
+        link_path_as_is = (link_path_start / link_path_end_as_is).resolve()
+        link_path_end_dot_md = pathlib.PosixPath(hyper_link.uri + ".md")  # The link may be a note.
         link_path_dot_md = link_path_start / link_path_end_dot_md
-        assert link_path_as_is.exists() or link_path_dot_md.exists(), \
-            (f"Int.rel.link does not exist. "
-             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
-        return HyperLinkType.INTERNAL_RELATIVE
+        if link_path_as_is.exists():
+            hyper_link.uri = str(link_path_as_is)
+            return HyperLinkType.INTERNAL
+        if link_path_dot_md.exists():
+            return HyperLinkType.INTERNAL
+        raise ValueError(
+            "Int.rel.link does not exist. "
+            f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`."
+        )
     else:
         # Internal absolute link.
         link_path_start = v_note.vault_dir
@@ -90,7 +97,7 @@ def _check_v_link_validity(
         assert link_path_as_is.exists() or link_path_dot_md.exists(), \
             (f"Int.abs.link does not exist. "
              f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
-        return HyperLinkType.INTERNAL_ABSOLUTE
+        return HyperLinkType.INTERNAL
 
 
 @vault_dirs
@@ -141,9 +148,7 @@ def test_v_links_resources(vault_dir: pathlib.PosixPath) -> None:
                 match _check_v_link_validity(v_note=v_note, line_idx=line_idx, hyper_link=hyper_link):
                     case HyperLinkType.EXTERNAL:
                         pass
-                    case HyperLinkType.INTERNAL_RELATIVE:
-                        pass
-                    case HyperLinkType.INTERNAL_ABSOLUTE:
+                    case HyperLinkType.INTERNAL:
                         note_dir_path = v_note.note_path.relative_to(v_note.vault_dir).parent
                         note_res_path = note_dir_path / "res"
                         file_dir_path = pathlib.Path(hyper_link.uri).parent
