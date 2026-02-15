@@ -56,6 +56,8 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
         Hotkey("insert-current-date", ["Mod", "Shift"], "D"),
         Hotkey("theme:use-dark", ["Alt", "Shift"], "D"),
         Hotkey("theme:use-light", ["Alt", "Shift"], "L"),
+        Hotkey("backlink:open", ["Alt"], "B"),
+        Hotkey("outgoing-links:open", ["Alt"], "O"),
     ]
 
     v_name = vault_dir.stem
