@@ -34,19 +34,19 @@ def parse_args() -> dict[str, Any]:
     # Task related:
     #
     prsr.add_argument(
-        "-x", dest="tasks_next",
+        "-x", "--next", dest="tasks_next",
         action="store_true",
         help="Show next tasks.")
     prsr.add_argument(
-        "-w", dest="tasks_wait",
+        "-w", "--wait", dest="tasks_wait",
         action="store_true",
         help="Show pending tasks.")
     prsr.add_argument(
-        "-n", dest="tasks_now",
+        "-n", "--now", dest="tasks_now",
         action="store_true",
         help="Show current tasks.")
     prsr.add_argument(
-        "-t", dest="tasks_all",
+        "-t", "--tasks", dest="tasks_all",
         action="store_true",
         help="Show all tasks.")
     prsr.add_argument(
