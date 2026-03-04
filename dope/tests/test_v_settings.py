@@ -33,15 +33,19 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
     @dataclasses.dataclass
     class Hotkey:
         """Holds all information of a hotkey."""
-        action: str
-        modifiers: list[str]  # Mod, Alt, Shift
-        key: str
+        action: str  # e.g. "app:toggle-left-sidebar"
+        modifiers: list[str]  # List of "Mod", "Alt", "Shift"
+        key: str  # e.g. "0" or "T"
 
         def __str__(self) -> str:
             return f"Hotkey({self.action}, {self.modifiers}, {self.key})"
 
         def __repr__(self) -> str:
             return self.__str__()
+
+        def get_modifiers_key_str(self) -> str:
+            """Return human-readable string, e.g. 'Alt + C'"""
+            return f"{' + '.join(self.modifiers)} + {self.key}"
 
     # Hotkeys that must be in hotkeys.json:
     hk_exp = [
@@ -58,27 +62,34 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
         Hotkey("theme:use-light", ["Alt", "Shift"], "L"),
         Hotkey("backlink:open", ["Alt"], "B"),
         Hotkey("outgoing-links:open", ["Alt"], "O"),
+        Hotkey("workspace:toggle-pin", ["Alt"], "P"),
+        Hotkey("editor:toggle-code", ["Alt"], "C"),
+        Hotkey("editor:toggle-highlight", ["Alt"], "H"),
     ]
 
-    v_name = vault_dir.stem
     hk_path = vault_dir / ".obsidian" / "hotkeys.json"
     assert hk_path.exists() and hk_path.is_file(), f"Could not find file `{hk_path}`."
     with open(hk_path, "rb") as hk_fp:
         hk_json_obj = json.load(fp=hk_fp)
 
+    # Parse items from 'hotkeys.json' into a list of Hotkey.
     hk_v_arr: list[Hotkey] = []
     for action, settings in hk_json_obj.items():
         for setting in settings:
             # An item may be empty; it means that the setting is removed from the vault.
             if setting.get("modifiers") is not None and setting.get("key") is not None:
                 hk_v_arr.append(Hotkey(action, setting["modifiers"], setting["key"]))
-                # _logger.info(hk_v_arr[-1])
 
     for hk in hk_exp:
+        # Get items for this action; there may be several of them.
         hk_v_arr_filtered = [hk_v for hk_v in hk_v_arr if hk.action == hk_v.action]
-        assert len(hk_v_arr_filtered) > 0, f"{v_name}: `{hk.action}` is not in hotkeys.json."
-        assert any(hk == hk_v for hk_v in hk_v_arr_filtered), \
-            f"{v_name}: {hk} is not in {hk_v_arr_filtered}."
+        assert len(hk_v_arr_filtered) > 0, f"`{hk.action}` is not in hotkeys.json."
+        err_msg = (
+            f"{hk.action!r} is in 'hotkeys.json', but either the modifiers or the key is wrong; "
+            f"expected {hk.get_modifiers_key_str()!r}; "
+            f"got {[x.get_modifiers_key_str() for x in hk_v_arr_filtered]}."
+        )
+        assert any(hk == hk_v for hk_v in hk_v_arr_filtered), err_msg
 
 
 @vault_dirs
