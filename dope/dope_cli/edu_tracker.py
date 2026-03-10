@@ -4,6 +4,7 @@ Executing user requests related to my education.
 from __future__ import annotations
 
 import logging
+import os
 import pathlib
 import random
 from collections.abc import Iterator
@@ -27,7 +28,9 @@ class Lesson:
     note: str
     tag: str
     course: str
-    action: str
+    action: str  # one of _actions
+
+    _actions = {"x", "n", "w", "big"}
 
     @classmethod
     def collect(cls, vault_dirs: list[pathlib.PosixPath], course_filter: list[str]) -> list[Lesson]:
@@ -82,11 +85,19 @@ class Lesson:
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
                 descr = Task.clean_line(note_line.replace(tag, ""))
-                if action.lower() not in {"x", "n", "w", "big"}:
+                if action.lower() not in Lesson._actions:
                     _logger.warning("Unrecognized lesson action `%s` in %s (%s/%s: %s)",
                                     action, tag, vault, note, descr)
                 yield Lesson(vault=vault, note=note, tag=tag, descr=descr,
                              course=course, action=action)
+
+    def pretty_str(self) -> str:
+        return (
+            f"{self.vault}/"
+            f"{Term.underline(Term.bold(self.note))}: "
+            f"{self.descr}."
+        )
+
 
 
 class EduTracker:
@@ -111,7 +122,7 @@ class EduTracker:
         lessons: list[Lesson] = Lesson.collect(vault_dirs=vault_dirs, course_filter=args["edu"])
 
         courses = set(stsk.course for stsk in lessons)
-        _logger.debug("Courses: %s.", courses)
+        _logger.debug("Courses (%d): %s.", len(courses), courses)
 
         print(Term.green("LESSONS:"))
 
@@ -135,9 +146,14 @@ class EduTracker:
                                 and stsk.action == action)]
                 random.shuffle(filtered)
                 for stsk in filtered:
-                    print(f"\t\t\t{stsk.vault}/", end="")
-                    print(f"{Term.underline(Term.bold(stsk.note))}: ", end="")
-                    print(f"{stsk.descr}.")
+                    print(f"\t\t\t{stsk.pretty_str()}")
+
+        print("--------")
+        print("STATS:")
+        print(f"{len(courses)} courses, {len(lessons)} lessons")
+        rnd_lesson_idx = int(os.urandom(4).hex(), 16) % len(lessons)
+        print(f"selected: {lessons[rnd_lesson_idx].pretty_str()}", )
+        print("--------")
 
         return self.ret_val
 
