@@ -77,10 +77,29 @@ class VaultUtils:
         """
         cls._check_dropbox_daemon()
         ret_val = 0
+
         if args["ide"] is not None:
-            ret_val = cls._process_ide(args=args)
+            ret_val += cls._process_ide(args=args)
+
         if args["stat"]:
             ret_val += cls._process_stat(args=args)
+
+        # Wrapper around Pytest that runs only tests that check vaults.
+        # Invocation examples:
+        #   d --test -v vault1
+        #   d --test -v vault1 -- --collect-only -k sport
+        if args["test"]:
+            dope_root_dir = pathlib.PosixPath(__file__).parent.parent.parent
+            cmd = f"cd {dope_root_dir}; pytest -m vault_test"
+            vault_filter: None | list[str] = args["vault"]
+            if vault_filter:
+                cmd += f" --vault {' '.join(vault_filter)}"
+
+            remainder = args["remainder"]
+            if remainder and remainder[0] == "--":
+                cmd += f" {' '.join(remainder[1:])}"
+            os.system(cmd)
+
         return ret_val
 
     @classmethod

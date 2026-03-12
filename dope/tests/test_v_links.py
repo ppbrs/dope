@@ -5,6 +5,8 @@ import enum
 import logging
 import pathlib
 
+import pytest
+
 from dope.hyper_link import HyperLink
 from dope.markdown_link import MarkdownLink
 from dope.v_note import VNote
@@ -100,6 +102,7 @@ def _check_v_link_validity(
         return HyperLinkType.INTERNAL
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_links_validity(vault_dir: pathlib.PosixPath) -> None:
     """
@@ -131,6 +134,7 @@ def test_v_links_validity(vault_dir: pathlib.PosixPath) -> None:
     _logger.info("%d Wiki links were found", num_wk_links)
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_links_resources(vault_dir: pathlib.PosixPath) -> None:
     """

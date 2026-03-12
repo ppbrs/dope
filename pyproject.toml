@@ -54,9 +54,9 @@ path = "dope/__about__.py"
 "Homepage" = "https://github.com/ppbrs/dope"
 "Bug Tracker" = "https://github.com/ppbrs/dope/issues"
 
-#
+# ==================================================================================================
 # pytest configuration
-#
+# ==================================================================================================
 [tool.pytest.ini_options]
 # Having pytest look for all files instead of "test_*.py" only:
 python_files = "*.py"
@@ -69,6 +69,10 @@ log_format = "%(asctime)s.%(msecs)03d %(levelname)s %(funcName)s: %(message)s"
 # Logging level for real-time output:
 log_cli = "True"
 log_cli_level = "INFO"
+
+markers = [
+	"""vault_test(boolean): mark a test to run on vaults, as opposed to on dope internals""",
+]
 
 # ==================================================================================================
 # pyright

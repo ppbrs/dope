@@ -63,10 +63,6 @@ def dope_cli() -> int:
         ret_val += process_arguments(args=args)
         ret_val += process_check_list(args=args)
 
-        if args["test"]:
-            dope_root_dir = pathlib.PosixPath(__file__).parent.parent.parent
-            os.system(f"cd {dope_root_dir} && pytest")
-
         return ret_val
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt")

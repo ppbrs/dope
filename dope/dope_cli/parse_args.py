@@ -88,7 +88,7 @@ def parse_args() -> dict[str, Any]:
     prsr.add_argument(
         "--test", dest="test",
         action="store_true",
-        help="Run all tests.")
+        help="Run all vault tests.")
     prsr.add_argument(
         "--stat", dest="stat",
         action="store_true",
@@ -114,6 +114,15 @@ def parse_args() -> dict[str, Any]:
         "-cl", "--check-list", dest="check_list",
         action="store_true",
         help="Open the check-list file.")
+
+    #
+    # --
+    #
+    prsr.add_argument(
+        "remainder",
+        nargs=argparse.REMAINDER,
+        help="Arguments to pass to the underlying tool.",
+    )
 
     Pomodoro.add_arguments(parser=prsr)
 

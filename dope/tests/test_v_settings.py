@@ -6,11 +6,14 @@ import json
 import logging
 import pathlib
 
+import pytest
+
 from .common import vault_dirs
 
 _logger = logging.getLogger(__name__)
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
     """
@@ -92,6 +95,7 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
         assert any(hk == hk_v for hk_v in hk_v_arr_filtered), err_msg
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_settings_app(vault_dir: pathlib.PosixPath) -> None:
     """
@@ -146,6 +150,7 @@ def test_v_settings_app(vault_dir: pathlib.PosixPath) -> None:
             f"{v_name}: \"{k}\" is expected to be `{v}` but is `{app_vault[k]}`."
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_settings_community_plugins(vault_dir: pathlib.PosixPath) -> None:
     """Check that all required community plugins are installed for each vault."""

@@ -5,12 +5,14 @@ This module contains tests for general files in Obsidian vaults.
 import logging
 import pathlib
 
+import pytest
+
 from .common import RESERVED_SYMBOLS
 from .common import vault_dirs
 
 _logger = logging.getLogger(__name__)
 
-
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are inappropriate symbols in file names."""
@@ -22,6 +24,7 @@ def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
                     vault_dir.stem, symbol, path.name, path)
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_files_trash(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are files in .trash directory."""
@@ -33,6 +36,7 @@ def test_v_files_trash(vault_dir: pathlib.PosixPath) -> None:
     assert not trash_files, f"Found files in .trash directories: {trash_files}"
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_files_inbox(vault_dir: pathlib.PosixPath) -> None:
     """

@@ -5,6 +5,8 @@ This module contains tests for Obsidian vaults.
 import logging
 import pathlib
 
+import pytest
+
 from dope.v_note import VNote
 
 from .common import RESERVED_SYMBOLS
@@ -13,6 +15,7 @@ from .common import vault_dirs
 _logger = logging.getLogger(__name__)
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_notes_newline(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are Windows-style new lines in the notes."""
@@ -29,6 +32,7 @@ def test_v_notes_newline(vault_dir: pathlib.PosixPath) -> None:
         _logger.warning("%d notes don't have an empty line in the end.", cnt_no_empty_line)
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_notes_titles(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are inappropriate symbols in note titles."""
@@ -41,6 +45,7 @@ def test_v_notes_titles(vault_dir: pathlib.PosixPath) -> None:
                     v_note.vault_dir.stem, symbol, v_note.note_path.relative_to(v_note.vault_dir))
 
 
+@pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_notes_inbox(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are unprocessed notes in inboxes."""

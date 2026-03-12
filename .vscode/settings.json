@@ -1,6 +1,13 @@
 {
 	"editor.renderWhitespace": "all", // for showing whitespaces as dots
 	"editor.multiCursorModifier": "alt", // to be able to do multiple selections with Alt+LeftClick (lubuntu: switch it off in openbox config)
+	"editor.rulers": [
+		100,
+		100.5
+	],
+	"editor.autoClosingBrackets": "never",
+	"editor.autoClosingQuotes": "never",
+	"editor.autoSurround": "never",
 
 	"workbench.panel.defaultLocation": "right",
 }
