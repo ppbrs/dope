@@ -29,10 +29,13 @@ class VNote:
 
     @classmethod
     def collect_iter(
-        cls, vault_dirs: list[pathlib.PosixPath], exclude_trash: bool
+        cls,
+        vault_dirs: list[pathlib.PosixPath],
+        *,
+        exclude_trash: bool,
     ) -> Generator[VNote, None, None]:
         """
-        Walk through all vaults and get all notes.
+        Walk through given vaults and get all notes from them.
         """
         for vault_dir in vault_dirs:
             for note_path in vault_dir.rglob("*.md"):
@@ -40,6 +43,30 @@ class VNote:
                 if exclude_trash and ".trash" in note_path.parts:
                     continue
                 yield VNote(vault_dir, note_path)
+
+    @classmethod
+    def collect_subdir_iter(
+        cls,
+        vault_dir: pathlib.PosixPath,
+        vault_subdir: pathlib.PosixPath,
+        *,
+        exclude_trash: bool,
+    ) -> Generator[VNote, None, None]:
+        """
+        Walk through a subdirectory of a vaults and get all notes.
+
+        The vault itself is needed for sanity checks and for constructing a VNote object.
+        """
+        assert vault_dir.exists()
+        assert vault_dir.is_dir()
+        assert vault_subdir.exists()
+        assert vault_subdir.is_dir()
+        assert vault_subdir.is_relative_to(vault_dir)
+        for note_path in vault_subdir.rglob("*.md"):
+            assert note_path.is_file()
+            if exclude_trash and ".trash" in note_path.parts:
+                continue
+            yield VNote(vault_dir, note_path)
 
     def lines_iter(
         self,

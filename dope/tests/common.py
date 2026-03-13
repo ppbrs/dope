@@ -1,6 +1,7 @@
 """Common code for tests."""
 import argparse
 from pathlib import PosixPath
+from typing import Any
 
 import pytest
 
@@ -24,3 +25,26 @@ vault_dirs = pytest.mark.parametrize(
     argvalues=(v_dirs := _get_vault_paths_tests()),
     ids=[v_dir.name for v_dir in v_dirs],
 )
+
+def _get_vault_dirs_subdirs_parametrization() -> dict[str, Any]:
+    """
+    Prepare parametrization parameters for @vault_dirs_subdirs
+    """
+    argnames = "vault_dir_subdir"
+    argvalues = []
+    ids = []
+    v_dirs_ = _get_vault_paths_tests()
+    for v_dir in v_dirs_:
+        dirs_with_md = {p.parent for p in v_dir.rglob("*.md")}
+        for d in sorted(dirs_with_md):
+            argvalues.append((v_dir, d))
+            ids.append(f"{v_dir.name}/{d.relative_to(v_dir)}")
+    return {
+        "argnames": argnames,
+        "argvalues": argvalues,
+        "ids": ids,
+    }
+
+# pytest parametrization iterating over all subdirectories of configured vaults that
+# contain markdown notes.
+vault_dirs_subdirs = pytest.mark.parametrize(**_get_vault_dirs_subdirs_parametrization())

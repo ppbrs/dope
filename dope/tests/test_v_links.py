@@ -13,6 +13,7 @@ from dope.v_note import VNote
 from dope.wiki_link import WikiLink
 
 from .common import vault_dirs
+from .common import vault_dirs_subdirs
 
 _logger = logging.getLogger(__name__)
 
@@ -135,15 +136,29 @@ def test_v_links_validity(vault_dir: pathlib.PosixPath) -> None:
 
 
 @pytest.mark.vault_test(True)
-@vault_dirs
-def test_v_links_resources(vault_dir: pathlib.PosixPath) -> None:
+@vault_dirs_subdirs
+def test_v_links_resources(vault_dir_subdir: tuple[pathlib.PosixPath, pathlib.PosixPath]) -> None:
     """
-    Check that a resource referenced by a hyperlink is the local "res" directory.
+    Walk throug all notes in a subdirectory of a vault, check that a resource referenced by a
+    hyperlink is in the local "res" directory.
     """
-
+    # pass
+    vault_dir = vault_dir_subdir[0]
+    vault_subdir = vault_dir_subdir[1]
+    assert vault_dir.exists()
+    assert vault_dir.is_dir()
+    assert vault_subdir.exists()
+    assert vault_subdir.is_dir()
+    assert vault_subdir.is_relative_to(vault_dir)
+    num_notes_checked = 0
     num_res_checked = 0
     num_res_errors = 0
-    for v_note in VNote.collect_iter(vault_dirs=[vault_dir], exclude_trash=True):
+    for v_note in VNote.collect_subdir_iter(
+        vault_dir=vault_dir,
+        vault_subdir=vault_subdir,
+        exclude_trash=True,
+    ):
+        num_notes_checked += 1
         for line_idx, note_line in v_note.lines_iter(lazy=True, remove_newline=True):
             for hyper_link in MarkdownLink.collect_iter(line=note_line):
                 if pathlib.Path(hyper_link.uri).suffix == ".md":
@@ -169,6 +184,6 @@ def test_v_links_resources(vault_dir: pathlib.PosixPath) -> None:
                             num_res_errors += 1
                         else:
                             _logger.debug("res GOOD: '%s', file in '%s'.", note_res_rpath, link_dir_path)
-
-
-    _logger.info("%d hyper-links were found and checked, %d problems.", num_res_checked, num_res_errors)
+    _logger.debug("checked %d notes, %d hyper-links were found and checked, %d problem(s).", num_notes_checked, num_res_checked, num_res_errors)
+    if num_res_errors:
+        pytest.fail(reason=f"Found {num_res_errors} problem(s)")
