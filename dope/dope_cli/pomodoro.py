@@ -1,4 +1,5 @@
 """Handle user requests related to pomodoro-timers."""
+
 import argparse
 import dataclasses
 import os
@@ -64,19 +65,28 @@ class Pomodoro:
         This method is expected to run before parser.parse_args() is invoked.
         """
         parser.add_argument(
-            "-ps", "--pomodoro-start", dest="pomodoro_start",
+            "-ps",
+            "--pomodoro-start",
+            dest="pomodoro_start",
             nargs="*",  # The result is either None or a list containing two strings.
             help="Start a pomodoro timer. "
-                 "Parameters are a timeout in minutes (from 1 to 180) and a name. "
-                 "Default timeout is 30 minutes. Default name is 'default'.")
+            "Parameters are a timeout in minutes (from 1 to 180) and a name. "
+            "Default timeout is 30 minutes. Default name is 'default'.",
+        )
         parser.add_argument(
-            "-pl", "--pomodoro-list", dest="pomodoro_list",
+            "-pl",
+            "--pomodoro-list",
+            dest="pomodoro_list",
             action="store_true",  # The result is a boolean.
-            help="List all active timers.")
+            help="List all active timers.",
+        )
         parser.add_argument(
-            "-pk", "--pomodoro-kill", dest="pomodoro_kill",
+            "-pk",
+            "--pomodoro-kill",
+            dest="pomodoro_kill",
             nargs="*",  # The result is either None or a list containing two strings.
-            help="Kill a timer. Parameters are any fragments of timers' PIDs.")
+            help="Kill a timer. Parameters are any fragments of timers' PIDs.",
+        )
 
     @staticmethod
     def _start(pomodoro_start: list[str]) -> None:
@@ -91,7 +101,8 @@ class Pomodoro:
             tmr_name = " ".join(pomodoro_start[1:])
         if tout_min < Pomodoro.TOUT_MIN_MIN or tout_min > Pomodoro.TOUT_MIN_MAX:
             raise ValueError(
-                f"Timeout is out of range [{Pomodoro.TOUT_MIN_MIN}, {Pomodoro.TOUT_MIN_MAX}].")
+                f"Timeout is out of range [{Pomodoro.TOUT_MIN_MIN}, {Pomodoro.TOUT_MIN_MAX}]."
+            )
 
         # We don't wait for the process to finish.
         # pylint: disable-next=consider-using-with
@@ -106,24 +117,22 @@ class Pomodoro:
             try:
                 cmd_line = proc.cmdline()
                 if len(cmd_line) == 4 and cmd_line[0] == "python3" and "pomodoro" in cmd_line[1]:
-                    tmr_info_arr.append(_TimerInfo(
-                        name=cmd_line[3],
-                        tout_min=int(cmd_line[2]),
-                        t_start=proc.create_time(),
-                        pid=proc.pid))
+                    tmr_info_arr.append(
+                        _TimerInfo(
+                            name=cmd_line[3],
+                            tout_min=int(cmd_line[2]),
+                            t_start=proc.create_time(),
+                            pid=proc.pid,
+                        )
+                    )
             except psutil.ZombieProcess:
                 pass
-        return sorted(
-            tmr_info_arr,
-            key=lambda tmr_info: tmr_info.pid,
-            reverse=False)
+        return sorted(tmr_info_arr, key=lambda tmr_info: tmr_info.pid, reverse=False)
 
     @staticmethod
     def _print_all(tmr_info_arr: list[_TimerInfo]) -> None:
         tmr_cnt = len(tmr_info_arr)
-        print(
-            str(tmr_cnt) + " active pomodoro timer" + ("s" if tmr_cnt > 1 else "")
-            + " found:")
+        print(str(tmr_cnt) + " active pomodoro timer" + ("s" if tmr_cnt > 1 else "") + " found:")
         for i, tmr_info in enumerate(tmr_info_arr, start=1):
             time_expire = tmr_info.t_start + tmr_info.tout_min * 60
             time_to_run = time_expire - time.time()
@@ -132,12 +141,16 @@ class Pomodoro:
             time_to_run_str = time.strftime("%H:%M:%S", time.gmtime(time_to_run))
             tmr_str = (
                 f"\t{i}: "
-                + (Fore.RED + Style.BRIGHT + tmr_info.name + Style.RESET_ALL) + " "
-                + "(pid=" + (Style.BRIGHT + str(tmr_info.pid) + Style.RESET_ALL) + "), "
+                + (Fore.RED + Style.BRIGHT + tmr_info.name + Style.RESET_ALL)
+                + " "
+                + "(pid="
+                + (Style.BRIGHT + str(tmr_info.pid) + Style.RESET_ALL)
+                + "), "
                 + f"{tmr_info.tout_min} min, "
                 + f"{time_start_str} -> {time_expire_str}, "
                 + "expires in "
-                + (Style.BRIGHT + str(time_to_run_str) + Style.RESET_ALL) + "."
+                + (Style.BRIGHT + str(time_to_run_str) + Style.RESET_ALL)
+                + "."
             )
             print(tmr_str)
 
@@ -151,10 +164,14 @@ class Pomodoro:
                 time_to_run_str = time.strftime("%H:%M:%S", time.gmtime(time_to_run))
                 kill_msg = (
                     "Killing the timer "
-                    + (Fore.RED + Style.BRIGHT + tmr_info.name + Style.RESET_ALL) + " "
-                    + "(pid=" + (Style.BRIGHT + str(tmr_info.pid) + Style.RESET_ALL) + "), "
+                    + (Fore.RED + Style.BRIGHT + tmr_info.name + Style.RESET_ALL)
+                    + " "
+                    + "(pid="
+                    + (Style.BRIGHT + str(tmr_info.pid) + Style.RESET_ALL)
+                    + "), "
                     + "which would have expired in "
-                    + (Style.BRIGHT + str(time_to_run_str) + Style.RESET_ALL) + "."
+                    + (Style.BRIGHT + str(time_to_run_str) + Style.RESET_ALL)
+                    + "."
                 )
                 print(kill_msg)
                 os.kill(tmr_info.pid, signal.SIGKILL)
@@ -179,8 +196,9 @@ def launch_timer() -> int:
             "critical",
             "-a",
             "DOPE",
-            "🍅 pomodoro", 
-            f"{tout_min} minutes elapsed for `{tmr_name}` (pid={os.getpid()})."],
+            "🍅 pomodoro",
+            f"{tout_min} minutes elapsed for `{tmr_name}` (pid={os.getpid()}).",
+        ],
         shell=False,
         check=True,
         capture_output=False,

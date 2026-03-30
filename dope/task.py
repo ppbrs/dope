@@ -1,4 +1,5 @@
 """Contains Task abstraction and its subtypes."""
+
 from __future__ import annotations
 
 import dataclasses
@@ -17,6 +18,7 @@ _logger = logging.getLogger(__name__)
 @dataclass
 class Task:
     """Encapsulates all information about a task."""
+
     SORTING_PRECEDENCE = -1
     """It is considered when listing tasks."""
 
@@ -29,7 +31,8 @@ class Task:
     re_obj_full_tag = re.compile(
         r".*"  # Optional symbols before the tag.
         + r"(?P<full_tag>\#.*?\/(n|x|w)\d)"  # The tag itself.
-        + r"(\s.*|\:|$)")  # Either nothing, or a colon, or at least one space after the tag.
+        + r"(\s.*|\:|$)"
+    )  # Either nothing, or a colon, or at least one space after the tag.
     """
     A full tag looks like #2023-12-31/x2.
     """
@@ -68,21 +71,28 @@ class Task:
             )
             if not tag_ok:
                 _logger.error(
-                    "Corrupted tag `%s` in '%s/%s', line %d.", full_tag, vault, note, line_num)
+                    "Corrupted tag `%s` in '%s/%s', line %d.", full_tag, vault, note, line_num
+                )
             priority = int(tag_parts[1][1:]) if len(tag_parts) > 1 else 1
 
             mtch_deadline = cls.re_obj_deadline.fullmatch(tag_parts[0][1:])
             if mtch_deadline is not None:
-                deadline = date(year=int(mtch_deadline.groupdict()["year"]),
-                                month=int(mtch_deadline.groupdict()["month"]),
-                                day=int(mtch_deadline.groupdict()["day"]))
+                deadline = date(
+                    year=int(mtch_deadline.groupdict()["year"]),
+                    month=int(mtch_deadline.groupdict()["month"]),
+                    day=int(mtch_deadline.groupdict()["day"]),
+                )
             else:
                 deadline = date.today()
-                _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.",
-                              full_tag, vault, note)
+                _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.", full_tag, vault, note)
 
-            yield task_cls(descr=cls.clean_line(note_line), vault=vault, note=note,
-                           priority=priority, deadline=deadline)
+            yield task_cls(
+                descr=cls.clean_line(note_line),
+                vault=vault,
+                note=note,
+                priority=priority,
+                deadline=deadline,
+            )
 
     @classmethod
     def clean_line(cls, note_line: str) -> str:
@@ -114,7 +124,7 @@ class Task:
 
     @classmethod
     def collect(cls, vault_dirs: list[pathlib.PosixPath]) -> list[Task]:
-        """ Find all tasks in all vaults."""
+        """Find all tasks in all vaults."""
         tasks: list[Task] = []
 
         num_lines = 0
@@ -149,24 +159,29 @@ class Task:
 
 class TaskNext(Task):
     """Encapsulates all information about a next action."""
+
     SORTING_PRECEDENCE = 1
 
 
 class TaskWait(Task):
     """Encapsulates all information about a pending action."""
+
     SORTING_PRECEDENCE = 2  # lowest
 
 
 class TaskNow(Task):
     """Encapsulates all information about a current action."""
+
     SORTING_PRECEDENCE = 0  # highest
 
 
 def test_task_parse_match_tag() -> None:
     """Test the regular expression used to find tags belonging to tasks in notes."""
+
     @dataclasses.dataclass
     class TestCase:
         """A test case."""
+
         string: str  # A text line.
         matches: bool  # Whether there is a tag in a line.
         full_tag: str | None  # The tag if there is one.
@@ -177,22 +192,18 @@ def test_task_parse_match_tag() -> None:
         TestCase("#2020-09-09/w3 abcd", True, "#2020-09-09/w3", TaskWait),
         TestCase("#2020-09-09/w3", True, "#2020-09-09/w3", TaskWait),
         TestCase(" #2020-09-09/w3", True, "#2020-09-09/w3", TaskWait),
-
         TestCase("abcd #2020-09-09/x3 abcd", True, "#2020-09-09/x3", TaskNext),
         TestCase("#2020-09-09/x3 abcd", True, "#2020-09-09/x3", TaskNext),
         TestCase("#2020-09-09/x3", True, "#2020-09-09/x3", TaskNext),
         TestCase(" #2020-09-09/x3", True, "#2020-09-09/x3", TaskNext),
-
         TestCase("abcd #2020-09-09/n3 abcd", True, "#2020-09-09/n3", TaskNow),
         TestCase("#2020-09-09/n3 abcd", True, "#2020-09-09/n3", TaskNow),
         TestCase("#2020-09-09/n3", True, "#2020-09-09/n3", TaskNow),
         TestCase(" #2020-09-09/n3", True, "#2020-09-09/n3", TaskNow),
-
         TestCase("abcd #2020-09-09/n3: abcd", True, "#2020-09-09/n3", TaskNow),
         TestCase("#2020-09-09/n3: abcd", True, "#2020-09-09/n3", TaskNow),
         TestCase("#2020-09-09/n3:", True, "#2020-09-09/n3", TaskNow),
         TestCase(" #2020-09-09/n3:", True, "#2020-09-09/n3", TaskNow),
-
         TestCase("#week", False, None, None),
         TestCase("#now", False, None, None),
         TestCase("#xyz", False, None, None),
@@ -205,8 +216,9 @@ def test_task_parse_match_tag() -> None:
             assert test_case.full_tag is not None
 
             assert match, f"Tag expected in '{test_case.string}'."
-            assert full_tag == test_case.full_tag, \
+            assert full_tag == test_case.full_tag, (
                 f"Tag expected '{test_case.full_tag}', got '{full_tag}'."
+            )
 
         else:
             assert not match, f"No tag expected in '{test_case.string}', but got '{full_tag}'."

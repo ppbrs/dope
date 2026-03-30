@@ -1,6 +1,7 @@
 """
 Executing user requests related to tasks.
 """
+
 import logging
 from typing import Any
 
@@ -41,11 +42,8 @@ class TaskTracker:
 
         # Sort them.
         def sort_func(task: Task) -> tuple[int, int, int]:
-            return (
-                task.get_days_to_dealine(),
-                task.SORTING_PRECEDENCE,
-                task.priority
-            )
+            return (task.get_days_to_dealine(), task.SORTING_PRECEDENCE, task.priority)
+
         tasks = sorted(tasks, key=sort_func, reverse=True)
 
         self._print_tasks(tasks)
@@ -78,8 +76,9 @@ class TaskTracker:
             priorities = {int(i) for i in priorities}
         except ValueError as err:
             raise ValueError("Priorities must be integers.") from err
-        assert all(int(i) in [1, 2, 3] for i in priorities), \
+        assert all(int(i) in [1, 2, 3] for i in priorities), (
             f"At least one priority is unrecognized: {priorities=}"
+        )
 
         tasks_flt = []
         for task in tasks:
@@ -101,7 +100,6 @@ class TaskTracker:
     def _print_tasks(tasks: list[Task]) -> None:
         """Output the list of tasks to the terminal."""
         for task in tasks:
-
             if isinstance(task, TaskNext):
                 task_str = Term.yellow(f"#X{task.priority}")
             elif isinstance(task, TaskNow):

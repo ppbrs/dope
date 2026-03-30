@@ -2,6 +2,7 @@
 Processing user requests in the dope command-line tool
 that are related to dope configuration
 """
+
 from pathlib import PosixPath
 from typing import Any
 
@@ -21,13 +22,13 @@ def process_arguments(args: dict[str, Any]) -> int:
         for path in paths_add:
             vault_path = PosixPath(path).expanduser()
             assert vault_path.exists() and vault_path.is_dir()
-            if (res := add_vault(vault_path=vault_path)):
+            if res := add_vault(vault_path=vault_path):
                 print(f"\nAdded '{vault_path}' to the configuration.")
             else:
                 print(f"\nVault '{vault_path}' in already in the configuration.")
 
     if args["config_vault_list"]:
-        if (vault_paths := get_vault_paths()):
+        if vault_paths := get_vault_paths():
             print("\nConfigured vaults:")
             for vault in vault_paths:
                 print(f"\t{vault}")
@@ -39,7 +40,7 @@ def process_arguments(args: dict[str, Any]) -> int:
         for path in paths_drop:
             vault_path = PosixPath(path).expanduser()
             assert vault_path.exists() and vault_path.is_dir()
-            if (res := drop_vault(vault_path=vault_path)):
+            if res := drop_vault(vault_path=vault_path):
                 print(f"\nRemoved '{vault_path}' from the configuration.")
             else:
                 print(f"\nVault '{vault_path}' in not in the configuration.")

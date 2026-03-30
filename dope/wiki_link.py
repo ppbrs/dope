@@ -4,6 +4,7 @@ A collection of helpers that extract wiki links from notes.
 Wiki syntax for a hyperlink is doubled square brackets:
 [[https://link-url-here.org|Link text Here]]
 """
+
 from __future__ import annotations
 
 import enum
@@ -25,6 +26,7 @@ class WikiLink(HyperLink):
     @classmethod
     def collect_iter(cls, line: str) -> Generator[WikiLink, None, None]:
         """Find all wiki links in a given line."""
+
         @enum.unique
         class _State(enum.Enum):
             IDLE = enum.auto()  # We are waiting for the first opening square bracket.
@@ -71,7 +73,7 @@ class WikiLink(HyperLink):
                 case _State.CLOSING:
                     if char == "]":
                         name = line[idx_name_head:idx_name_tail].strip()
-                        if (uri_raw := line[idx_uri_head:idx_uri_tail]):
+                        if uri_raw := line[idx_uri_head:idx_uri_tail]:
                             yield WikiLink(name=name, uri_raw=uri_raw)
                     state = _State.IDLE
                 case _State.INLINE_CODE:
@@ -81,9 +83,11 @@ class WikiLink(HyperLink):
 
 def test_wiki_link_collect() -> None:
     """Check that all wiki links are detected correctly."""
+
     @dataclass
     class TestCase:
         """Inputs and outputs of a test."""
+
         line: str
         wiki_links: list[WikiLink]
 
@@ -100,40 +104,56 @@ def test_wiki_link_collect() -> None:
         #
         TestCase(
             line="before[[uri|name]]after",
-            wiki_links=[WikiLink("name", "uri"), ]),
+            wiki_links=[
+                WikiLink("name", "uri"),
+            ],
+        ),
         TestCase(
             line="before[[ uri | name ]]after",
-            wiki_links=[WikiLink("name", "uri"), ]),
+            wiki_links=[
+                WikiLink("name", "uri"),
+            ],
+        ),
         TestCase(
             line="before[[uri1|name1]]between[[uri2|name2]]after",
-            wiki_links=[WikiLink("name1", "uri1"), WikiLink("name2", "uri2"), ]),
+            wiki_links=[
+                WikiLink("name1", "uri1"),
+                WikiLink("name2", "uri2"),
+            ],
+        ),
         TestCase(
             line="before[[uri1|name1]][[uri2|name2]]after",
-            wiki_links=[WikiLink("name1", "uri1"), WikiLink("name2", "uri2"), ]),
+            wiki_links=[
+                WikiLink("name1", "uri1"),
+                WikiLink("name2", "uri2"),
+            ],
+        ),
         TestCase(
             line="before[[nameless-uri]]after",
-            wiki_links=[WikiLink(name="", uri_raw="nameless-uri"),]),
-        TestCase(
-            line="before[[]]after",
-            wiki_links=[]),
+            wiki_links=[
+                WikiLink(name="", uri_raw="nameless-uri"),
+            ],
+        ),
+        TestCase(line="before[[]]after", wiki_links=[]),
         #
         # Inside inline code
         #
-        TestCase(
-            line="before`[[uri]]`after",
-            wiki_links=[]),
+        TestCase(line="before`[[uri]]`after", wiki_links=[]),
         #
         # With a section
         #
         TestCase(
             line="before[[uri#section|name]]after",
-            wiki_links=[WikiLink(name="name", uri_raw="uri#section"),]),
+            wiki_links=[
+                WikiLink(name="name", uri_raw="uri#section"),
+            ],
+        ),
     ]
 
     for test_case in test_cases:
-
         wiki_links = list(WikiLink.collect_iter(line=test_case.line))
         assert len(wiki_links) == len(test_case.wiki_links)
         for idx, md_link in enumerate(wiki_links):
-            assert md_link == test_case.wiki_links[idx], \
+            assert md_link == test_case.wiki_links[idx], (
                 f"Expected {test_case.wiki_links[idx]}. Got {md_link}."
+            )

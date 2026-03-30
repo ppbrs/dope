@@ -42,7 +42,10 @@ def test_v_notes_titles(vault_dir: pathlib.PosixPath) -> None:
             if symbol in title:
                 logging.warning(
                     "%s: Symbol `%s` in `%s`.",
-                    v_note.vault_dir.stem, symbol, v_note.note_path.relative_to(v_note.vault_dir))
+                    v_note.vault_dir.stem,
+                    symbol,
+                    v_note.note_path.relative_to(v_note.vault_dir),
+                )
 
 
 @pytest.mark.vault_test(True)
@@ -53,4 +56,5 @@ def test_v_notes_inbox(vault_dir: pathlib.PosixPath) -> None:
         vault_inbox_path = v_note.vault_dir / "_inbox"
         if v_note.note_path.parent == vault_inbox_path:
             logging.error(
-                "%s's inbox contains a note: `%s`.", v_note.vault_dir.stem, v_note.note_path.stem)
+                "%s's inbox contains a note: `%s`.", v_note.vault_dir.stem, v_note.note_path.stem
+            )

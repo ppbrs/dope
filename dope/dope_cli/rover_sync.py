@@ -1,6 +1,7 @@
 """
 Executing user requests related to synchronizing vaults with my smartphone.
 """
+
 import logging
 import os
 import subprocess as sp
@@ -16,13 +17,11 @@ _logger = logging.getLogger(__name__)
 class RoverSync:
     """A namespace for functions that perform synchronization of files between the local vault
     (the Base) and my smartphone (the Rover)."""
+
     # pylint: disable=too-few-public-methods
 
     @classmethod
-    def process(
-        cls,
-        args: dict[str, Any]
-    ) -> int:
+    def process(cls, args: dict[str, Any]) -> int:
         """
         Executing user's requests related to synchronizing vaults with my smartphone.
         """
@@ -49,13 +48,15 @@ class RoverSync:
 
             print(f"{vault_name}: Walking through BASE.")
             bfiles, bdirs = cls._get_files_dirs(bvdir)
-            _logger.debug("%d files / %d directories on `%s` BASE.",
-                          len(bfiles), len(bdirs), vault_name)
+            _logger.debug(
+                "%d files / %d directories on `%s` BASE.", len(bfiles), len(bdirs), vault_name
+            )
 
             print(f"{vault_name}: Walking through ROVER.")
             rfiles, rdirs = cls._get_files_dirs(rvdir)
-            _logger.debug("%d files / %d directories on `%s` ROVER.",
-                          len(rfiles), len(rdirs), vault_name)
+            _logger.debug(
+                "%d files / %d directories on `%s` ROVER.", len(rfiles), len(rdirs), vault_name
+            )
 
             cls._process_dirs(args=args, rvdir=rvdir, rdirs=rdirs, bdirs=bdirs)
             cls._process_files(args=args, rvdir=rvdir, bvdir=bvdir, rfiles=rfiles, bfiles=bfiles)
@@ -63,11 +64,7 @@ class RoverSync:
 
     @classmethod
     def _process_dirs(
-        cls,
-        args: dict[str, Any],
-        rvdir: PosixPath,
-        rdirs: set[PosixPath],
-        bdirs: set[PosixPath]
+        cls, args: dict[str, Any], rvdir: PosixPath, rdirs: set[PosixPath], bdirs: set[PosixPath]
     ) -> None:
         dir_diff_rb = rdirs - bdirs
         if not dir_diff_rb:
@@ -95,7 +92,7 @@ class RoverSync:
         rvdir: PosixPath,
         bvdir: PosixPath,
         rfiles: set[PosixPath],
-        bfiles: set[PosixPath]
+        bfiles: set[PosixPath],
     ) -> None:
         fdiff_rb = rfiles - bfiles  # Files on the Rover but not on the Base.
         if not fdiff_rb:
@@ -118,8 +115,10 @@ class RoverSync:
                 # The file may have already been deleted.
                 continue
             print()
-            msg = (f"{i}/{len(fdiff_br)}: "
-                   f"File {bvdir.name}/{Term.bold(str(fname))} is on BASE but not on ROVER.")
+            msg = (
+                f"{i}/{len(fdiff_br)}: "
+                f"File {bvdir.name}/{Term.bold(str(fname))} is on BASE but not on ROVER."
+            )
             print(msg)
             if args["rover"] == "wet":
                 cls._copy_to_rover(rvdir=rvdir, bvdir=bvdir, fname=fname)
@@ -148,18 +147,17 @@ class RoverSync:
         src_fpath = bvdir / fname
         assert "*" not in str(src_fpath)
         assert "?" not in str(src_fpath)
-        assert "\"" not in str(src_fpath)
+        assert '"' not in str(src_fpath)
         assert "'" not in str(src_fpath)
 
         dst_dpath = (rvdir / fname).parent
         assert "*" not in str(dst_dpath)
         assert "?" not in str(dst_dpath)
-        assert "\"" not in str(dst_dpath)
+        assert '"' not in str(dst_dpath)
         assert "'" not in str(dst_dpath)
 
         print(f"\tCopy to ROVER? ({cls._get_file_size_string(src_fpath)})", end="")
         if cls._input_yes_no(default=True):
-
             cmd = f"gio mkdir -p '{dst_dpath}'"
             cls._run_command(cmd=cmd, silent=True)
 
@@ -169,10 +167,7 @@ class RoverSync:
                 print("\tDone.")
 
     @classmethod
-    def _get_files_dirs(
-        cls,
-        vdir: PosixPath
-    ) -> tuple[set[PosixPath], set[PosixPath]]:
+    def _get_files_dirs(cls, vdir: PosixPath) -> tuple[set[PosixPath], set[PosixPath]]:
         files = set()
         dirs = set()
         for rpath in vdir.rglob("*"):
@@ -190,14 +185,17 @@ class RoverSync:
         return files, dirs
 
     @classmethod
-    def _run_command(
-        cls,
-        cmd: str,
-        silent: bool
-    ) -> bool:
+    def _run_command(cls, cmd: str, silent: bool) -> bool:
         _logger.debug("$ %s", cmd)
 
-        with sp.Popen(args=[cmd, ], stdout=sp.PIPE, stderr=sp.PIPE, shell=True) as child:
+        with sp.Popen(
+            args=[
+                cmd,
+            ],
+            stdout=sp.PIPE,
+            stderr=sp.PIPE,
+            shell=True,
+        ) as child:
             outs_b, errs_b = child.communicate()
             exit_code = child.wait()
         outs = outs_b.decode(encoding="ascii", errors="ignore").split("\n")
@@ -278,13 +276,16 @@ class RoverSync:
         """
         mtp_dir = cls._find_rover_path_one_level(
             path=PosixPath(f"/run/user/{os.getuid()}/gvfs/"),
-            glob="mtp:*", level_name="MTP filesystems")
+            glob="mtp:*",
+            level_name="MTP filesystems",
+        )
         if mtp_dir is None:
             return None
         print(f"'{mtp_dir.name}' chosen")
 
         storage_dir = cls._find_rover_path_one_level(
-            path=mtp_dir, glob="*", level_name="storage directories")
+            path=mtp_dir, glob="*", level_name="storage directories"
+        )
         if storage_dir is None:
             return None
         print(f"'{mtp_dir.name} / {storage_dir.name}' was chosen.")

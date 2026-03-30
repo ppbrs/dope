@@ -1,6 +1,7 @@
 """
 Executing user requests related to my education.
 """
+
 from __future__ import annotations
 
 import logging
@@ -34,7 +35,7 @@ class Lesson:
 
     @classmethod
     def collect(cls, vault_dirs: list[pathlib.PosixPath], course_filter: list[str]) -> list[Lesson]:
-        """ Find all lessons in all vaults.
+        """Find all lessons in all vaults.
 
         A line of the form "... #edu/{course}/{action}[:] {descr}" is considered a lesson.
         """
@@ -77,27 +78,30 @@ class Lesson:
                 num_tag_comps = len("#edu/course/action".split("/"))
                 if len(tag_comps) < num_tag_comps:
                     continue
-                assert len(tag_comps) == num_tag_comps, \
-                    (f"Tag `{word}` in `{v_note.note_path.name}` has wrong number of components "
-                     f"(got {len(tag_comps)}, expected {num_tag_comps}).")
+                assert len(tag_comps) == num_tag_comps, (
+                    f"Tag `{word}` in `{v_note.note_path.name}` has wrong number of components "
+                    f"(got {len(tag_comps)}, expected {num_tag_comps})."
+                )
                 _, course, action = tag_comps
 
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
                 descr = Task.clean_line(note_line.replace(tag, ""))
                 if action.lower() not in Lesson._actions:
-                    _logger.warning("Unrecognized lesson action `%s` in %s (%s/%s: %s)",
-                                    action, tag, vault, note, descr)
-                yield Lesson(vault=vault, note=note, tag=tag, descr=descr,
-                             course=course, action=action)
+                    _logger.warning(
+                        "Unrecognized lesson action `%s` in %s (%s/%s: %s)",
+                        action,
+                        tag,
+                        vault,
+                        note,
+                        descr,
+                    )
+                yield Lesson(
+                    vault=vault, note=note, tag=tag, descr=descr, course=course, action=action
+                )
 
     def pretty_str(self) -> str:
-        return (
-            f"{self.vault}/"
-            f"{Term.underline(Term.bold(self.note))}: "
-            f"{self.descr}."
-        )
-
+        return f"{self.vault}/{Term.underline(Term.bold(self.note))}: {self.descr}."
 
 
 class EduTracker:
@@ -129,8 +133,7 @@ class EduTracker:
         # Print as course -> action -> vault -> note -> description.
         for course in sorted(courses):
             print(f"{course}")
-            actions = set(stsk.action for stsk in lessons
-                          if stsk.course == course)
+            actions = set(stsk.action for stsk in lessons if stsk.course == course)
             for action in sorted(actions):
                 if action in {"x", "big"}:
                     action_str = Term.yellow(action.upper())
@@ -141,9 +144,9 @@ class EduTracker:
                 else:
                     action_str = action.upper()
                 print(f"\t\t{action_str}")
-                filtered = [stsk for stsk in lessons
-                            if (stsk.course == course
-                                and stsk.action == action)]
+                filtered = [
+                    stsk for stsk in lessons if (stsk.course == course and stsk.action == action)
+                ]
                 random.shuffle(filtered)
                 for stsk in filtered:
                     print(f"\t\t\t{stsk.pretty_str()}")
@@ -152,7 +155,9 @@ class EduTracker:
         print("STATS:")
         print(f"{len(courses)} courses, {len(lessons)} lessons")
         rnd_lesson_idx = int(os.urandom(4).hex(), 16) % len(lessons)
-        print(f"selected: {lessons[rnd_lesson_idx].pretty_str()}", )
+        print(
+            f"selected: {lessons[rnd_lesson_idx].pretty_str()}",
+        )
         print("--------")
 
         return self.ret_val

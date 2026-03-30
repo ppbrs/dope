@@ -3,30 +3,31 @@
 # 	https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 
 [project]
-name = "dope"
-description = "Collection of tests and a CLI tool for my Obsidian vaults. Task tracker."
-readme = "README.md"
-dynamic = [
-	"version",
-]
 authors = [
-	{name="ppbrs", email="prishchepenko.boris@gmail.com"},
+  {name = "ppbrs", email = "prishchepenko.boris@gmail.com"},
 ]
-requires-python = ">=3.10"
 dependencies = [
-	"psutil >= 5.9",
-	"types-psutil >= 5.9",
-	"colorama >= 0.4",
-	"types-colorama >= 0.4",
-	"pylama >= 8.4.1",
-	"pyright >= 1.1",
+  "colorama >= 0.4",
+  "psutil >= 5.9",
+  "pylama >= 8.4.1",
+  "pyright >= 1.1",
+  "ruff >= 0.15",
+  "types-psutil >= 5.9",
+  "types-colorama >= 0.4",
 ]
+description = "Collection of tests and a CLI tool for my Obsidian vaults. Task tracker."
+dynamic = [
+  "version",
+]
+name = "dope"
+readme = "README.md"
+requires-python = ">=3.10"
 
 # For a complete list of classifiers, see https://pypi.org/classifiers/.
 classifiers = [
-	"Programming Language :: Python :: 3",
-	"License :: OSI Approved :: MIT License",
-	"Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 
 # After installing the project, a `d` command will be available.
@@ -44,15 +45,15 @@ d = "dope:dope_cli"
 # Also [build-system] allows declaring which dependencies are needed to build the project,
 # see `requires`.
 [build-system]
-requires = ["hatchling>=1.18.0"]
 build-backend = "hatchling.build"
+requires = ["hatchling>=1.18.0"]
 
 [tool.hatch.version]
 path = "dope/__about__.py"
 
 [project.urls]
-"Homepage" = "https://github.com/ppbrs/dope"
 "Bug Tracker" = "https://github.com/ppbrs/dope/issues"
+"Homepage" = "https://github.com/ppbrs/dope"
 
 # ==================================================================================================
 # pytest configuration
@@ -62,16 +63,16 @@ path = "dope/__about__.py"
 python_files = "*.py"
 
 # Logging level for failed tests:
-log_level = "DEBUG"
 log_date_format = "%H:%M:%S"
 log_format = "%(asctime)s.%(msecs)03d %(levelname)s %(funcName)s: %(message)s"
+log_level = "DEBUG"
 
 # Logging level for real-time output:
 log_cli = "True"
 log_cli_level = "INFO"
 
 markers = [
-	"""vault_test(boolean): mark a test to run on vaults, as opposed to on dope internals""",
+  """vault_test(boolean): mark a test to run on vaults, as opposed to on dope internals""",
 ]
 
 # ==================================================================================================
@@ -79,11 +80,11 @@ markers = [
 # ==================================================================================================
 [tool.pyright]
 
-include = ["dope"]
 exclude = []
+include = ["dope"]
 
-pythonVersion = "3.12"
 pythonPlatform = "Linux"
+pythonVersion = "3.12"
 
 # ==================================================================================================
 # pylama
@@ -107,8 +108,30 @@ wrap_length = 100
 force_single_line = "True"
 
 # ==================================================================================================
-# isort
+# mypy
 # ==================================================================================================
 [tool.mypy]
 
 strict = true
+
+# ==================================================================================================
+# ruff
+# ==================================================================================================
+[tool.ruff]
+
+line-length = 100
+
+# --------------------------------------------------------------------------------------------------
+[tool.ruff.format]
+# https://docs.astral.sh/ruff/formatter/
+
+# Use double quotes for strings.
+quote-style = "double"
+# Indent with spaces, rather than tabs.
+indent-style = "space"
+
+docstring-code-format = true
+docstring-code-line-length = 80
+
+# --------------------------------------------------------------------------------------------------
+[tool.ruff.lint]

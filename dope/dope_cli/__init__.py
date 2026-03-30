@@ -1,6 +1,7 @@
 """
 dope_cli submodule
 """
+
 import logging
 import os
 import pathlib
@@ -50,7 +51,9 @@ def dope_cli() -> int:
         if get_vault_paths():
             _logger.info(
                 "Configured vaults (%d): %s.",
-                len(get_vault_paths()), ", ".join(f"'{v}'" for v in get_vault_paths()))
+                len(get_vault_paths()),
+                ", ".join(f"'{v}'" for v in get_vault_paths()),
+            )
         else:
             _logger.warning("No vaults configured.")
 

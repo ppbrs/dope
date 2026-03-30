@@ -8,6 +8,7 @@ Markdown links differ from Wiki links:
 * [[link]] is seen as "link" in text and links to page "link".
 * [[a|b]] appears as "b" but links to page "a".
 """
+
 from __future__ import annotations
 
 import enum
@@ -29,6 +30,7 @@ class MarkdownLink(HyperLink):
     @classmethod
     def collect_iter(cls, line: str) -> Generator[MarkdownLink, None, None]:
         """Find all markdown links in a given line."""
+
         @enum.unique
         class _State(enum.Enum):
             IDLE = enum.auto()  # We are looking for the opening square bracket.
@@ -89,9 +91,11 @@ class MarkdownLink(HyperLink):
 
 def test_markdown_link_collect() -> None:
     """Check that all links are detected correctly."""
+
     @dataclass
     class TestCase:
         """Inputs and outputs of a test."""
+
         line: str
         md_links: list[MarkdownLink]
 
@@ -107,24 +111,43 @@ def test_markdown_link_collect() -> None:
         #
         # Simple links
         #
-        TestCase(line="before[name](uri)after",
-                 md_links=[MarkdownLink("name", "uri"), ]),
-        TestCase(line="before[name1](uri1)between[name2](uri2)after",
-                 md_links=[MarkdownLink("name1", "uri1"),
-                           MarkdownLink("name2", "uri2"), ]),
-        TestCase(line="before[empty-uri]()after",
-                 md_links=[MarkdownLink("empty-uri", ""),]),
-        TestCase(line="before[name](uri(parens))after",
-                 md_links=[MarkdownLink("name", "uri(parens)"),]),
+        TestCase(
+            line="before[name](uri)after",
+            md_links=[
+                MarkdownLink("name", "uri"),
+            ],
+        ),
+        TestCase(
+            line="before[name1](uri1)between[name2](uri2)after",
+            md_links=[
+                MarkdownLink("name1", "uri1"),
+                MarkdownLink("name2", "uri2"),
+            ],
+        ),
+        TestCase(
+            line="before[empty-uri]()after",
+            md_links=[
+                MarkdownLink("empty-uri", ""),
+            ],
+        ),
+        TestCase(
+            line="before[name](uri(parens))after",
+            md_links=[
+                MarkdownLink("name", "uri(parens)"),
+            ],
+        ),
         #
         # Links with brackets
         #
-        TestCase(line="before[name[1[2[3]2]1]](uri(1(2(3)2)1))after",
-                 md_links=[MarkdownLink("name[1[2[3]2]1]", "uri(1(2(3)2)1)"),]),
+        TestCase(
+            line="before[name[1[2[3]2]1]](uri(1(2(3)2)1))after",
+            md_links=[
+                MarkdownLink("name[1[2[3]2]1]", "uri(1(2(3)2)1)"),
+            ],
+        ),
     ]
 
     for test_case in test_cases:
-
         md_links = list(MarkdownLink.collect_iter(line=test_case.line))
         assert len(md_links) == len(test_case.md_links)
         for idx, md_link in enumerate(md_links):

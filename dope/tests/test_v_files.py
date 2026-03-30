@@ -12,6 +12,7 @@ from .common import vault_dirs
 
 _logger = logging.getLogger(__name__)
 
+
 @pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
@@ -20,8 +21,8 @@ def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
         for symbol in RESERVED_SYMBOLS:
             if symbol in path.name:
                 logging.warning(
-                    "%s: Symbol `%s` in `%s` (%s).",
-                    vault_dir.stem, symbol, path.name, path)
+                    "%s: Symbol `%s` in `%s` (%s).", vault_dir.stem, symbol, path.name, path
+                )
 
 
 @pytest.mark.vault_test(True)
@@ -48,12 +49,10 @@ def test_v_files_inbox(vault_dir: pathlib.PosixPath) -> None:
     inbox_files = []
     inbox_dir = vault_dir / "_inbox"
     assert inbox_dir.exists(), f"'{inbox_dir.relative_to(vault_dir.parent)}' not found."
-    assert inbox_dir.is_dir(), \
-        f"'{inbox_dir.relative_to(vault_dir.parent)}' is not a directory."
+    assert inbox_dir.is_dir(), f"'{inbox_dir.relative_to(vault_dir.parent)}' is not a directory."
     inbox_keep = inbox_dir / ".keep"
     assert inbox_keep.exists(), f"'{inbox_keep.relative_to(vault_dir.parent)}' not found."
-    assert inbox_keep.is_file(), \
-        f"'{inbox_keep.relative_to(vault_dir.parent)}' is not a file."
+    assert inbox_keep.is_file(), f"'{inbox_keep.relative_to(vault_dir.parent)}' is not a file."
     for path in vault_dir.rglob("_inbox/*"):
         if path.name != ".keep":
             path_rel = path.relative_to(vault_dir.parent)

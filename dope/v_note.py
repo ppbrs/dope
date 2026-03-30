@@ -1,4 +1,5 @@
 """Contains VNote class only."""
+
 from __future__ import annotations
 
 import logging
@@ -13,6 +14,7 @@ _logger = logging.getLogger(__name__)
 @dataclass
 class VNote:
     """Encapsulates all the information about a note in a vault."""
+
     vault_dir: PosixPath
     note_path: PosixPath
 

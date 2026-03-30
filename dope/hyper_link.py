@@ -1,4 +1,5 @@
 """Contains HyperLink class."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -74,6 +75,7 @@ def test_hyper_link_constructor() -> None:
     @dataclass
     class TestCase:
         """Inputs and outputs of a test."""
+
         name: str
         """'name' that is passed to the constructor."""
         uri_raw: str

@@ -4,6 +4,7 @@ Dope configuration.
 Configuration files:
 * vaults.json holds a list of all vault directories
 """
+
 import json
 import logging
 from pathlib import PosixPath
@@ -82,6 +83,7 @@ def _get_vaults_json_path() -> PosixPath:
     config_dir_path = PosixPath(platformdirs.user_config_dir("dope"))
     config_dir_path.mkdir(parents=True, exist_ok=True)
     return config_dir_path / "vaults.json"
+
 
 def get_config() -> dict[str, Any]:
     config_dir_path = PosixPath(platformdirs.user_config_dir("dope"))

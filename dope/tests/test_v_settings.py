@@ -1,6 +1,7 @@
 """
 This module contains tests for settings of Obsidian vaults.
 """
+
 import dataclasses
 import json
 import logging
@@ -36,6 +37,7 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
     @dataclasses.dataclass
     class Hotkey:
         """Holds all information of a hotkey."""
+
         action: str  # e.g. "app:toggle-left-sidebar"
         modifiers: list[str]  # List of "Mod", "Alt", "Shift"
         key: str  # e.g. "0" or "T"
@@ -52,8 +54,20 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
 
     # Hotkeys that must be in hotkeys.json:
     hk_exp = [
-        Hotkey("app:toggle-left-sidebar", ["Mod", ], "0"),
-        Hotkey("editor:insert-wikilink", ["Mod", ], "K"),
+        Hotkey(
+            "app:toggle-left-sidebar",
+            [
+                "Mod",
+            ],
+            "0",
+        ),
+        Hotkey(
+            "editor:insert-wikilink",
+            [
+                "Mod",
+            ],
+            "K",
+        ),
         Hotkey("app:open-vault", ["Mod", "Shift"], "V"),
         Hotkey("file-explorer:reveal-active-file", ["Mod", "Shift"], "Y"),
         Hotkey("editor:swap-line-down", ["Alt"], "ArrowDown"),
@@ -113,7 +127,6 @@ def test_v_settings_app(vault_dir: pathlib.PosixPath) -> None:
         "autoPairBrackets": False,
         # Don't pair Markdown syntax automatically (for bold, italic, etc.):
         "autoPairMarkdown": False,
-
         # Vim key bindings:
         "vimMode": True,
         #
@@ -144,34 +157,38 @@ def test_v_settings_app(vault_dir: pathlib.PosixPath) -> None:
     with open(app_path, "rb") as app_fp:
         app_vault = json.load(fp=app_fp)
     for k, v in app_exp.items():
-        assert k in app_vault, \
-            f"{v_name}: \"{k}\" is not in `app.json`."
-        assert v == app_vault[k], \
-            f"{v_name}: \"{k}\" is expected to be `{v}` but is `{app_vault[k]}`."
+        assert k in app_vault, f'{v_name}: "{k}" is not in `app.json`.'
+        assert v == app_vault[k], (
+            f'{v_name}: "{k}" is expected to be `{v}` but is `{app_vault[k]}`.'
+        )
 
 
 @pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_settings_community_plugins(vault_dir: pathlib.PosixPath) -> None:
     """Check that all required community plugins are installed for each vault."""
-    plugins_required = frozenset([
-        "homepage",
-        "obsidian-plantuml",
-        "better-export-pdf",
-        "obsidian-graphviz",
-    ])
+    plugins_required = frozenset(
+        [
+            "homepage",
+            "obsidian-plantuml",
+            "better-export-pdf",
+            "obsidian-graphviz",
+        ]
+    )
 
     plugins_config_path = vault_dir / ".obsidian" / "community-plugins.json"
-    assert plugins_config_path.exists() and plugins_config_path.is_file(), \
-        (f"Could not find file `{plugins_config_path.relative_to(vault_dir)}`; "
+    assert plugins_config_path.exists() and plugins_config_path.is_file(), (
+        f"Could not find file `{plugins_config_path.relative_to(vault_dir)}`; "
         "this may mean that community plugins are disabled or none of them is installed "
-        f"for vault '{vault_dir.name}'.")
+        f"for vault '{vault_dir.name}'."
+    )
     with open(plugins_config_path, "rb") as fp:
         plugins_config = json.load(fp=fp)
     assert isinstance(plugins_config, list)
     assert all(isinstance(item, str) for item in plugins_config)
     plugins_installed = frozenset(plugins_config)
     plugins_missing = plugins_required - plugins_installed
-    assert not plugins_missing, \
-        ("Some required community plugins are not installed or installed but not enabled: "
-        f"{', '.join(list(plugins_missing))}.")
+    assert not plugins_missing, (
+        "Some required community plugins are not installed or installed but not enabled: "
+        f"{', '.join(list(plugins_missing))}."
+    )

@@ -1,6 +1,7 @@
 """
 This module contains tests for Obsidian vaults.
 """
+
 import enum
 import logging
 import pathlib
@@ -45,11 +46,7 @@ class HyperLinkType(enum.Enum):
     INTERNAL = enum.auto()
 
 
-def _check_v_link_validity(
-    v_note: VNote,
-    line_idx: int,
-    hyper_link: HyperLink
-) -> HyperLinkType:
+def _check_v_link_validity(v_note: VNote, line_idx: int, hyper_link: HyperLink) -> HyperLinkType:
     """
     Check that the link points to an existing file or note.
 
@@ -60,14 +57,16 @@ def _check_v_link_validity(
     if hyper_link.is_external():
         return HyperLinkType.EXTERNAL
     if hyper_link.uri.startswith("broken:"):
-        return HyperLinkType.BROKEN  # A link that no longer valid. This can be an ex Evernote link, Windows file,
+        return (
+            HyperLinkType.BROKEN
+        )  # A link that no longer valid. This can be an ex Evernote link, Windows file,
         # or a link that was corrupted during the migration from Joplin database.
-    assert not hyper_link.uri.startswith("evernote:"), \
-        (f"Legacy Evernote link."
-         f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
-    assert not hyper_link.uri.startswith("file:"), \
-        (f"Legacy Windows link."
-         f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
+    assert not hyper_link.uri.startswith("evernote:"), (
+        f"Legacy Evernote link.Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`."
+    )
+    assert not hyper_link.uri.startswith("file:"), (
+        f"Legacy Windows link.Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`."
+    )
     # Internal link.
     hyper_link.uri = hyper_link.decoded()
     # hyper_link.uri = hyper_link.uri.split("#")[0]  # Remove heading.
@@ -97,9 +96,10 @@ def _check_v_link_validity(
         link_path_as_is = link_path_start / link_path_end_as_is
         link_path_end_dot_md = pathlib.PosixPath(hyper_link.uri + ".md")
         link_path_dot_md = link_path_start / link_path_end_dot_md
-        assert link_path_as_is.exists() or link_path_dot_md.exists(), \
-            (f"Int.abs.link does not exist. "
-             f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`.")
+        assert link_path_as_is.exists() or link_path_dot_md.exists(), (
+            f"Int.abs.link does not exist. "
+            f"Note=`{v_note.note_path}`, line={line_idx}. URI=`{hyper_link.uri}`."
+        )
         return HyperLinkType.INTERNAL
 
 
@@ -165,7 +165,9 @@ def test_v_links_resources(vault_dir_subdir: tuple[pathlib.PosixPath, pathlib.Po
                     continue  # Ignore links to notes.
                 _logger.debug("hyper_link '%s'.", hyper_link.uri)
                 num_res_checked += 1
-                match _check_v_link_validity(v_note=v_note, line_idx=line_idx, hyper_link=hyper_link):
+                match _check_v_link_validity(
+                    v_note=v_note, line_idx=line_idx, hyper_link=hyper_link
+                ):
                     case HyperLinkType.EXTERNAL:
                         pass
                     case HyperLinkType.INTERNAL:
@@ -179,11 +181,24 @@ def test_v_links_resources(vault_dir_subdir: tuple[pathlib.PosixPath, pathlib.Po
                         if note_res_rpath != link_dir_rpath:
                             _logger.error(
                                 "%s: line %d: Resource ('%s') is not in the local 'res' directory ('%s').",
-                                v_note.note_path.name, line_idx, hyper_link.uri, note_res_rpath)
-                            _logger.debug("res BAD: '%s', file in '%s'.", note_res_rpath, link_dir_path)
+                                v_note.note_path.name,
+                                line_idx,
+                                hyper_link.uri,
+                                note_res_rpath,
+                            )
+                            _logger.debug(
+                                "res BAD: '%s', file in '%s'.", note_res_rpath, link_dir_path
+                            )
                             num_res_errors += 1
                         else:
-                            _logger.debug("res GOOD: '%s', file in '%s'.", note_res_rpath, link_dir_path)
-    _logger.debug("checked %d notes, %d hyper-links were found and checked, %d problem(s).", num_notes_checked, num_res_checked, num_res_errors)
+                            _logger.debug(
+                                "res GOOD: '%s', file in '%s'.", note_res_rpath, link_dir_path
+                            )
+    _logger.debug(
+        "checked %d notes, %d hyper-links were found and checked, %d problem(s).",
+        num_notes_checked,
+        num_res_checked,
+        num_res_errors,
+    )
     if num_res_errors:
         pytest.fail(reason=f"Found {num_res_errors} problem(s)")

@@ -1,4 +1,5 @@
 """Common code for tests."""
+
 import argparse
 from pathlib import PosixPath
 from typing import Any
@@ -8,7 +9,8 @@ import pytest
 from dope.config import get_vault_paths
 
 # Notes and other files cannot contain these symbols:
-RESERVED_SYMBOLS = ["`", "[", "]", "'", "\""]
+RESERVED_SYMBOLS = ["`", "[", "]", "'", '"']
+
 
 def _get_vault_paths_tests() -> list[PosixPath]:
     """
@@ -19,12 +21,14 @@ def _get_vault_paths_tests() -> list[PosixPath]:
     pytest_args, _ = parser.parse_known_args()
     return get_vault_paths(filter=pytest_args.vault)
 
+
 # pytest parametrization iterating over all configured vaults.
 vault_dirs = pytest.mark.parametrize(
     argnames="vault_dir",
     argvalues=(v_dirs := _get_vault_paths_tests()),
     ids=[v_dir.name for v_dir in v_dirs],
 )
+
 
 def _get_vault_dirs_subdirs_parametrization() -> dict[str, Any]:
     """
@@ -44,6 +48,7 @@ def _get_vault_dirs_subdirs_parametrization() -> dict[str, Any]:
         "argvalues": argvalues,
         "ids": ids,
     }
+
 
 # pytest parametrization iterating over all subdirectories of configured vaults that
 # contain markdown notes.

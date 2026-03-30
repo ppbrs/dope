@@ -8,6 +8,12 @@
 	"editor.autoClosingBrackets": "never",
 	"editor.autoClosingQuotes": "never",
 	"editor.autoSurround": "never",
-
 	"workbench.panel.defaultLocation": "right",
+	//
+	"[python]": {
+		"editor.defaultFormatter": "charliermarsh.ruff",
+		"editor.codeActionsOnSave": {
+			// "source.organizeImports": "explicit"
+		}
+	}
 }

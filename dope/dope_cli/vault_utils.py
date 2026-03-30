@@ -1,6 +1,7 @@
 """
 Executing user requests related to vaults.
 """
+
 from __future__ import annotations
 
 import enum
@@ -20,6 +21,7 @@ _logger = logging.getLogger(__name__)
 @enum.unique
 class Ide(enum.Enum):
     """Enum for all supported IDEs."""
+
     SUBLIME_TEXT = enum.auto()
     VSCODE = enum.auto()
 
@@ -53,6 +55,7 @@ class Ide(enum.Enum):
 
 class VaultUtils:
     """An object of this class has everything that is needed to manage vaults."""
+
     # pylint: disable=too-few-public-methods
 
     @classmethod
@@ -139,10 +142,15 @@ class VaultUtils:
                 name = proc.name()
                 if name == "dropbox":
                     create_time = time.strftime(
-                        "%Y-%m-%d %H:%M:%S", time.localtime(proc.create_time()))
+                        "%Y-%m-%d %H:%M:%S", time.localtime(proc.create_time())
+                    )
                     _logger.info(
                         "Dropbox daemon: PID=%d, status=%s, created %s, cmd='%s'.",
-                        proc.pid, proc.status(), create_time, " ".join(proc.cmdline()))
+                        proc.pid,
+                        proc.status(),
+                        create_time,
+                        " ".join(proc.cmdline()),
+                    )
                     break
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
@@ -156,7 +164,7 @@ class VaultUtils:
             print(f"{vault_dir.name} statistics:")
 
             # Getting directory size
-            vault_dir_size = sum(file.stat().st_size for file in vault_dir.rglob('*'))
+            vault_dir_size = sum(file.stat().st_size for file in vault_dir.rglob("*"))
             vault_dir_size_mb = vault_dir_size / 1024 / 1024
             print(f"\t{round(vault_dir_size_mb, 1)} MB = {vault_dir_size} B")
 
