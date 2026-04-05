@@ -78,7 +78,6 @@ class VaultUtils:
         """
         Executing user's requests related to vaults.
         """
-        cls._check_dropbox_daemon()
         ret_val = 0
 
         if args["ide"] is not None:
@@ -132,30 +131,6 @@ class VaultUtils:
             for ide in ides:
                 ide.open_vault(vault_dir=vault_dir)
         return 0
-
-    @classmethod
-    def _check_dropbox_daemon(cls) -> None:
-        """Regardless of User arguments, check that Dropbox daemon is running."""
-
-        for proc in psutil.process_iter():
-            try:
-                name = proc.name()
-                if name == "dropbox":
-                    create_time = time.strftime(
-                        "%Y-%m-%d %H:%M:%S", time.localtime(proc.create_time())
-                    )
-                    _logger.info(
-                        "Dropbox daemon: PID=%d, status=%s, created %s, cmd='%s'.",
-                        proc.pid,
-                        proc.status(),
-                        create_time,
-                        " ".join(proc.cmdline()),
-                    )
-                    break
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
-        else:
-            raise ValueError("Dropbox daemon is not running")
 
     @classmethod
     def _process_stat(cls, args: dict[str, Any]) -> int:
