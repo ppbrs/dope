@@ -180,11 +180,12 @@ def test_v_links_resources(vault_dir_subdir: tuple[pathlib.PosixPath, pathlib.Po
                             link_dir_rpath = link_dir_path
                         if note_res_rpath != link_dir_rpath:
                             _logger.error(
-                                "%s: line %d: Resource ('%s') is not in the local 'res' directory ('%s').",
+                                "%s: line %d: Resource ('%s') is not in the local 'res' directory ('%s').\n\t%s",
                                 v_note.note_path.name,
                                 line_idx,
                                 hyper_link.uri,
                                 note_res_rpath,
+                                note_line if len(note_line) <= 100 else f"{note_line:.100}...",
                             )
                             _logger.debug(
                                 "res BAD: '%s', file in '%s'.", note_res_rpath, link_dir_path

@@ -110,9 +110,11 @@ def parse_args() -> dict[str, Any]:
         help="""Run all vault tests.
         Useful parameters:
             '-x'/'--exitfirst' to stop at first failure,
-            '-k keyword' to run specific test based on their names.
+            '-k keyword' to run specific test based on their names,
+            '--log-level=ERROR' to reduce noise of failed tests.
         See more at https://docs.pytest.org/en/6.2.x/usage.html.
-        """)
+        """,
+    )
     prsr.add_argument("--stat", dest="stat", action="store_true", help="Show vault statistics.")
     prsr.add_argument(
         "--vector",

@@ -55,7 +55,7 @@ class VNote:
         exclude_trash: bool,
     ) -> Generator[VNote, None, None]:
         """
-        Walk through a subdirectory of a vaults and get all notes.
+        Walk non-recursively through a subdirectory of a vaults and get all notes.
 
         The vault itself is needed for sanity checks and for constructing a VNote object.
         """
@@ -64,7 +64,7 @@ class VNote:
         assert vault_subdir.exists()
         assert vault_subdir.is_dir()
         assert vault_subdir.is_relative_to(vault_dir)
-        for note_path in vault_subdir.rglob("*.md"):
+        for note_path in vault_subdir.glob("*.md"):
             assert note_path.is_file()
             if exclude_trash and ".trash" in note_path.parts:
                 continue
