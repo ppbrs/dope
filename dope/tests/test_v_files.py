@@ -17,12 +17,15 @@ _logger = logging.getLogger(__name__)
 @vault_dirs
 def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are inappropriate symbols in file names."""
+    err_count = 0
     for path in vault_dir.rglob("*"):
         for symbol in RESERVED_SYMBOLS:
             if symbol in path.name:
-                logging.warning(
-                    "%s: Symbol `%s` in `%s` (%s).", vault_dir.stem, symbol, path.name, path
-                )
+                err_msg = f"Symbol `{symbol}` in `{path.name}` ({path})."
+                _logger.error(err_msg)
+                err_count += 1
+    if err_count:
+        raise AssertionError("Reserved symbols detected in file names. See error log for details.")
 
 
 @pytest.mark.vault_test(True)

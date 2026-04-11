@@ -103,7 +103,16 @@ def parse_args() -> dict[str, Any]:
         action="store",
         help="Synchronize with my smartphone; parameters are `dry` or `wet`.",
     )
-    prsr.add_argument("--test", dest="test", action="store_true", help="Run all vault tests.")
+    prsr.add_argument(
+        "--test",
+        dest="test",
+        action="store_true",
+        help="""Run all vault tests.
+        Useful parameters:
+            '-x'/'--exitfirst' to stop at first failure,
+            '-k keyword' to run specific test based on their names.
+        See more at https://docs.pytest.org/en/6.2.x/usage.html.
+        """)
     prsr.add_argument("--stat", dest="stat", action="store_true", help="Show vault statistics.")
     prsr.add_argument(
         "--vector",
