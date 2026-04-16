@@ -8,10 +8,8 @@ import enum
 import logging
 import os
 import pathlib
-import time
+import shlex
 from typing import Any
-
-import psutil
 
 from dope.config import get_vault_paths
 
@@ -25,8 +23,8 @@ class Ide(enum.Enum):
     SUBLIME_TEXT = enum.auto()
     VSCODE = enum.auto()
 
-    @classmethod
-    def from_arg(cls, arg: str) -> Ide:
+    @staticmethod
+    def from_arg(arg: str) -> Ide:
         """Parse user argument for an IDE to one of supported IDEs."""
         match arg:
             case "subl":
@@ -58,8 +56,8 @@ class VaultUtils:
 
     # pylint: disable=too-few-public-methods
 
-    @classmethod
-    def filter_vault_dirs(cls, args: dict[str, Any]) -> list[pathlib.PosixPath]:
+    @staticmethod
+    def filter_vault_dirs(args: dict[str, Any]) -> list[pathlib.PosixPath]:
         """
         Parse the --vault argument and collect the requested vaults.
         """
@@ -73,18 +71,18 @@ class VaultUtils:
                     vault_dirs.append(vault_dir)
         return vault_dirs
 
-    @classmethod
-    def process(cls, args: dict[str, Any]) -> int:
+    @staticmethod
+    def process(args: dict[str, Any]) -> int:
         """
         Executing user's requests related to vaults.
         """
         ret_val = 0
 
         if args["ide"] is not None:
-            ret_val += cls._process_ide(args=args)
+            ret_val += VaultUtils._process_ide(args=args)
 
         if args["stat"]:
-            ret_val += cls._process_stat(args=args)
+            ret_val += VaultUtils._process_stat(args=args)
 
         # Wrapper around Pytest that runs only tests that check vaults.
         # Invocation examples:
@@ -99,13 +97,16 @@ class VaultUtils:
 
             remainder = args["remainder"]
             if remainder and remainder[0] == "--":
-                cmd += f" {' '.join(remainder[1:])}"
+                # Turning a list of arguments into a single, shell-safe string by automatically
+                # adding quotes to any argument that contains spaces or special characters:
+                cmd += " " + shlex.join(remainder[1:])
+            _logger.debug("cmd: %s", cmd)
             os.system(cmd)
 
         return ret_val
 
-    @classmethod
-    def _process_ide(cls, args: dict[str, Any]) -> int:
+    @staticmethod
+    def _process_ide(args: dict[str, Any]) -> int:
         """
         --ide/-i option opens vaults with specified IDEs.
         """
@@ -132,8 +133,8 @@ class VaultUtils:
                 ide.open_vault(vault_dir=vault_dir)
         return 0
 
-    @classmethod
-    def _process_stat(cls, args: dict[str, Any]) -> int:
+    @staticmethod
+    def _process_stat(args: dict[str, Any]) -> int:
         """Show vaults' statistics."""
         for vault_dir in get_vault_paths(filter=args["vault"]):
             print(f"{vault_dir.name} statistics:")
