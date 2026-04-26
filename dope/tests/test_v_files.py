@@ -31,13 +31,24 @@ def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
 @pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_files_trash(vault_dir: pathlib.PosixPath) -> None:
-    """Check if there are files in .trash directory."""
-    trash_files = []
-    for path in vault_dir.rglob(".trash/*"):
-        path_rel = path.relative_to(vault_dir.parent)
-        trash_files.append(str(path_rel))
-        logging.warning("%s: %s.", vault_dir.stem, path_rel)
-    assert not trash_files, f"Found files in .trash directories: {trash_files}"
+    """
+    Check .trash directory.
+
+    .trash directory may exist
+    .trash directory may contain only a .keep file
+    """
+    trash_dir = vault_dir / ".trash"
+    if trash_dir.exists():
+        assert trash_dir.is_dir()
+        trash_files = []
+        for path in trash_dir.rglob(".trash/*"):
+            if path.name != ".keep":
+                path_rel = path.relative_to(vault_dir.parent)
+                trash_files.append(str(path_rel))
+                logging.warning("%s: %s.", vault_dir.stem, path_rel)
+        assert not trash_files, (
+            f"Found {len(trash_files)} files in .trash directories: {trash_files}"
+        )
 
 
 @pytest.mark.vault_test(True)
