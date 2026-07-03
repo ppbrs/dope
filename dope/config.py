@@ -22,14 +22,14 @@ def get_vault_paths(filter: None | list[str] = None) -> list[PosixPath]:
     """
     vaults_json_path = _get_vaults_json_path()
     if not vaults_json_path.exists():
-        _logger.warning("Vaults configuration doesn't exist; creating.")
+        _logger.warning("Vaults configuration (%s) doesn't exist; creating.", vaults_json_path)
         _write_vaults_json([])
         return []
 
     with open(vaults_json_path, "rb") as fp:
         vaults = json.load(fp=fp)
     if vaults == []:
-        _logger.warning("Vaults configuration is empty.")
+        _logger.warning("Vaults configuration (%s) is empty.", vaults_json_path)
         return []
 
     vault_paths = [PosixPath(vault) for vault in vaults]
