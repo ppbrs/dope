@@ -10,19 +10,18 @@ import pytest
 from .common import RESERVED_SYMBOLS
 from .common import vault_dirs
 
-_logger = logging.getLogger(__name__)
-
 
 @pytest.mark.vault_test(True)
 @vault_dirs
 def test_v_files_titles(vault_dir: pathlib.PosixPath) -> None:
     """Check if there are inappropriate symbols in file names."""
+    logger = logging.getLogger(__name__)
     err_count = 0
     for path in vault_dir.rglob("*"):
         for symbol in RESERVED_SYMBOLS:
             if symbol in path.name:
                 err_msg = f"Symbol `{symbol}` in `{path.name}` ({path})."
-                _logger.error(err_msg)
+                logger.error(err_msg)
                 err_count += 1
     if err_count:
         raise AssertionError("Reserved symbols detected in file names. See error log for details.")
@@ -37,18 +36,22 @@ def test_v_files_trash(vault_dir: pathlib.PosixPath) -> None:
     .trash directory may exist
     .trash directory may contain only a .keep file
     """
+    logger = logging.getLogger(__name__)
     trash_dir = vault_dir / ".trash"
     if trash_dir.exists():
         assert trash_dir.is_dir()
         trash_files = []
-        for path in trash_dir.rglob(".trash/*"):
+        for path in trash_dir.rglob("*"):
             if path.name != ".keep":
                 path_rel = path.relative_to(vault_dir.parent)
                 trash_files.append(str(path_rel))
-                logging.warning("%s: %s.", vault_dir.stem, path_rel)
+                logger.warning("%s: %s.", vault_dir.stem, path_rel)
         assert not trash_files, (
             f"Found {len(trash_files)} files in .trash directories: {trash_files}"
         )
+    else:
+        logger.warning("trash directory does not exist: '%s'", trash_dir)
+
 
 
 @pytest.mark.vault_test(True)
