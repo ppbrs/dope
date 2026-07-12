@@ -9,7 +9,6 @@ authors = [
 dependencies = [
   "colorama >= 0.4",
   "psutil >= 5.9",
-  "pylama >= 8.4.1",
   "pyright >= 1.1",
   "ruff >= 0.15",
   "types-psutil >= 5.9",
@@ -85,15 +84,6 @@ include = ["dope"]
 
 pythonPlatform = "Linux"
 pythonVersion = "3.12"
-
-# ==================================================================================================
-# pylama
-# ==================================================================================================
-[tool.pylama]
-
-format = "pylint"
-linters = "eradicate,mccabe,mypy,pycodestyle,pylint,pyflakes,pyright"
-# pydocstyle
 
 # ==================================================================================================
 # mypy

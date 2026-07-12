@@ -11,24 +11,6 @@
 			"group": "build",
 		},
 		{
-			"label": "python3: Run PYLAMA on this module.",
-			"type": "shell",
-			"options": {
-				"cwd": "${workspaceFolder}",
-			},
-			"command": "pylama ${file}",
-			"group": "build",
-		},
-		{
-			"label": "python3: Run PYLAMA on whole project.",
-			"type": "shell",
-			"options": {
-				"cwd": "${workspaceFolder}",
-			},
-			"command": "pylama",
-			"group": "build",
-		},
-		{
 			"label": "python3: Run PYRIGHT on whole project.",
 			"type": "shell",
 			"options": {
