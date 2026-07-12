@@ -29,22 +29,6 @@ def _get_all_python_modules() -> list[str]:
     return getattr(_get_all_python_modules, attr_name)  # type: ignore[no-any-return]
 
 
-def test_lint_isort() -> None:
-    """Run isort on all files in the package."""
-
-    completed_process = subprocess.run(
-        "isort . --check",
-        shell=True,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if completed_process.returncode != 0:
-        for line in completed_process.stderr.splitlines():
-            _logger.error("%s", line)
-        assert False, "isort failed"
-
-
 def test_lint_pylint() -> None:
     """Run pylint on all files in the package."""
 
@@ -128,4 +112,35 @@ def test_lint_ruff_format(
         for line in completed_process.stderr.splitlines():
             _logger.error(line)
         err_msg = f"Ruff thinks '{path}' needs reformatting."
+        raise AssertionError(err_msg)
+
+
+@pytest.mark.parametrize(
+    argnames="path",
+    argvalues=_get_all_python_modules(),
+    ids=_get_all_python_modules(),
+)
+def test_lint_ruff_check(
+    path: str,
+) -> None:
+    """
+    Check Ruff Linter is happy with this Python module.
+
+    'ruff check' analyzes Python code
+    to detect bugs (logic errors), security issues, style violations, and unneeded code (unused
+    imports, undefined variables).
+    """
+    completed_process = subprocess.run(
+        ["ruff", "check", path],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    for line in completed_process.stdout.splitlines():
+        if line:
+            _logger.info(line)
+    if completed_process.returncode != 0:
+        for line in completed_process.stderr.splitlines():
+            _logger.error(line)
+        err_msg = f"Ruff thinks '{path}' has issues."
         raise AssertionError(err_msg)

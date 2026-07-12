@@ -8,8 +8,7 @@ import pathlib
 import sys
 from pprint import pformat
 
-from dope.config import get_config
-from dope.config import get_vault_paths
+from dope.config import get_config, get_vault_paths
 from dope.dope_cli.check_list import process_check_list
 from dope.dope_cli.config import process_arguments
 from dope.dope_cli.edu_tracker import EduTracker

@@ -10,8 +10,7 @@ import time
 from typing import Any
 
 import psutil
-from colorama import Fore
-from colorama import Style
+from colorama import Fore, Style
 
 
 @dataclasses.dataclass

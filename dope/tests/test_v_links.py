@@ -13,8 +13,7 @@ from dope.markdown_link import MarkdownLink
 from dope.v_note import VNote
 from dope.wiki_link import WikiLink
 
-from .common import vault_dirs
-from .common import vault_dirs_subdirs
+from .common import vault_dirs, vault_dirs_subdirs
 
 _logger = logging.getLogger(__name__)
 

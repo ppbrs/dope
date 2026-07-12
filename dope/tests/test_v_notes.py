@@ -9,8 +9,7 @@ import pytest
 
 from dope.v_note import VNote
 
-from .common import RESERVED_SYMBOLS
-from .common import vault_dirs
+from .common import RESERVED_SYMBOLS, vault_dirs
 
 _logger = logging.getLogger(__name__)
 

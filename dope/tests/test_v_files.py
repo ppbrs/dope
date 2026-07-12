@@ -7,8 +7,7 @@ import pathlib
 
 import pytest
 
-from .common import RESERVED_SYMBOLS
-from .common import vault_dirs
+from .common import RESERVED_SYMBOLS, vault_dirs
 
 
 @pytest.mark.vault_test(True)
@@ -51,7 +50,6 @@ def test_v_files_trash(vault_dir: pathlib.PosixPath) -> None:
         )
     else:
         logger.warning("trash directory does not exist: '%s'", trash_dir)
-
 
 
 @pytest.mark.vault_test(True)

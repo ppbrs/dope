@@ -6,10 +6,7 @@ import logging
 from typing import Any
 
 from dope.config import get_vault_paths
-from dope.task import Task
-from dope.task import TaskNext
-from dope.task import TaskNow
-from dope.task import TaskWait
+from dope.task import Task, TaskNext, TaskNow, TaskWait
 from dope.term import Term
 
 _logger = logging.getLogger(__name__)

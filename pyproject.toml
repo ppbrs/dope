@@ -92,20 +92,8 @@ pythonVersion = "3.12"
 [tool.pylama]
 
 format = "pylint"
-linters = "eradicate,mccabe,mypy,pycodestyle,pylint,pyflakes,isort,pyright"
+linters = "eradicate,mccabe,mypy,pycodestyle,pylint,pyflakes,pyright"
 # pydocstyle
-
-# ==================================================================================================
-# isort
-# ==================================================================================================
-[tool.isort]
-# See all isort options: https://pycqa.github.io/isort/docs/configuration/options.html
-line_length = 100
-wrap_length = 100
-
-# Personally, I find this option the best. It allows faster debugging and leaving comments
-# for a particular import.
-force_single_line = "True"
 
 # ==================================================================================================
 # mypy
@@ -135,3 +123,24 @@ docstring-code-line-length = 80
 
 # --------------------------------------------------------------------------------------------------
 [tool.ruff.lint]
+
+# (https://docs.astral.sh/ruff/rules/)
+select = [
+  # "E", "W",  # Pycodestyle Errors and Warnings
+  # "F",  # Pyflakes (Common errors like unused imports)
+  "I",  # isort (Import sorting)
+  # "UP",  # Pyupgrade (Modernize Python syntax)
+  # "B",  # Flake8-bugbear (Subtle bugs and design issues)
+  # "S",  # Bandit (Security checks)
+  # "ANN",  # Flake8-annotations (Type hints enforcement)
+  # "N",  # Pep8-naming (Naming conventions)
+  # "D",  # Pydocstyle (Docstring formatting)
+  # "RUF",  # Ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+
+combine-as-imports = true  # Combines 'from x import y as z' onto one line
+force-sort-within-sections = false  # Sorts alphabetically ignoring 'from' vs 'import'
+
+# --------------------------------------------------------------------------------------------------

@@ -46,11 +46,6 @@
 					"file_regex": "(...*?):([0-9]*):.*",
 				},
 				{
-					"name": "Run ISORT on this module.",
-					"working_dir": "${project_path}",
-					"shell_cmd": "isort ${file}",
-				},
-				{
 					"name": "Run PYTEST on this module.",
 					"working_dir": "${project_path}",
 					"shell_cmd": "pytest ${file}",

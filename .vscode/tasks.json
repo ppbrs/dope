@@ -38,12 +38,21 @@
 			"group": "build",
 		},
 		{
-			"label": "python3: Run ISORT on this module.",
+			"label": "python3: RUFF: Fix imports sorting and formatting in this module.",
 			"type": "shell",
 			"options": {
 				"cwd": "${workspaceFolder}",
 			},
-			"command": "isort ${file}",
+			"command": "ruff check --select I --fix ${file}",
+			"group": "build",
+		},
+		{
+			"label": "python3: RUFF: Fix imports sorting and formatting in all modules.",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}",
+			},
+			"command": "ruff check --select I --fix .",
 			"group": "build",
 		},
 		{

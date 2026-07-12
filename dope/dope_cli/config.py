@@ -6,9 +6,7 @@ that are related to dope configuration
 from pathlib import PosixPath
 from typing import Any
 
-from dope.config import add_vault
-from dope.config import drop_vault
-from dope.config import get_vault_paths
+from dope.config import add_vault, drop_vault, get_vault_paths
 
 
 def process_arguments(args: dict[str, Any]) -> int:
@@ -22,7 +20,7 @@ def process_arguments(args: dict[str, Any]) -> int:
         for path in paths_add:
             vault_path = PosixPath(path).expanduser()
             assert vault_path.exists() and vault_path.is_dir()
-            if res := add_vault(vault_path=vault_path):
+            if add_vault(vault_path=vault_path):
                 print(f"\nAdded '{vault_path}' to the configuration.")
             else:
                 print(f"\nVault '{vault_path}' in already in the configuration.")
@@ -40,7 +38,7 @@ def process_arguments(args: dict[str, Any]) -> int:
         for path in paths_drop:
             vault_path = PosixPath(path).expanduser()
             assert vault_path.exists() and vault_path.is_dir()
-            if res := drop_vault(vault_path=vault_path):
+            if drop_vault(vault_path=vault_path):
                 print(f"\nRemoved '{vault_path}' from the configuration.")
             else:
                 print(f"\nVault '{vault_path}' in not in the configuration.")
