@@ -3,12 +3,15 @@
 import argparse
 import dataclasses
 import os
+import pathlib
 import signal
 import subprocess as sp
 import sys
 import time
+from datetime import datetime, timedelta
 from typing import Any
 
+import platformdirs
 import psutil
 from colorama import Fore, Style
 
@@ -18,7 +21,7 @@ from dope.config import get_config, update_config
 @dataclasses.dataclass
 class _TimerInfo:
     name: str
-    tout_min: int
+    tout_mins: int
     """Timer timeout in minutes."""
     t_start: float
     """UTC time when the timer was started."""
@@ -28,9 +31,9 @@ class _TimerInfo:
 class Pomodoro:
     """Manage pomodoro timers."""
 
-    TOUT_MIN_DEFAULT = 30  # Default timer timeout, in minutes.
-    TOUT_MIN_MIN = 1  # Minimal timer timeout, in minutes.
-    TOUT_MIN_MAX = 180  # Maximal timer timeout, in minutes.
+    TOUT_MINS_DEFAULT = 30  # Default timer timeout, in minutes.
+    TOUT_MINS_MIN = 1  # Minimal timer timeout, in minutes.
+    TOUT_MINS_MAX = 60  # Maximal timer timeout, in minutes.
     TMR_NAME_DEFAULT = "default"  # Default timer name.
 
     @staticmethod
@@ -43,20 +46,39 @@ class Pomodoro:
         kill_command = args["pomodoro_kill"] is not None
 
         if start_command:
-            Pomodoro._start(args["pomodoro_start"])
+            Pomodoro._start(pomodoro_start_args=args["pomodoro_start"])
 
         tmr_info_arr: list[_TimerInfo] = Pomodoro._find_all()
-        if (start_command or list_command or kill_command) and not tmr_info_arr:
-            print("No active pomodoro timers found.\n")
-            return 0
+        if start_command or list_command or kill_command:
+            if not tmr_info_arr:
+                print("No active pomodoro timers found.\n")
+            else:
+                Pomodoro._print_all(tmr_info_arr)
 
-        if list_command or start_command:
-            Pomodoro._print_all(tmr_info_arr)
+            log_file_path = pathlib.PosixPath(platformdirs.user_config_dir("dope")) / "pomodoro.log"
+            if log_file_path.exists():
+                historical = log_file_path.read_text().splitlines()
+                if historical:
+                    print("Historical:")
+                    num = min(10, len(historical))
+                    for i in range(num):
+                        print(f"\t{historical[i].strip()}")
+                else:
+                    print("No historical pomodoro timers found.\n")
 
         if args["pomodoro_kill"] is not None:
             Pomodoro._kill(pid_parts=args["pomodoro_kill"], tmr_info_arr=tmr_info_arr)
 
         return 0
+
+    @staticmethod
+    def _get_timeout_mins_default() -> int:
+        tout_mins_default = get_config().get("pomodoro-default-timeout", None)
+        if tout_mins_default is None:
+            tout_mins_default = Pomodoro.TOUT_MINS_DEFAULT
+            update_config(update={"pomodoro-default-timeout": tout_mins_default})
+        assert isinstance(tout_mins_default, int)
+        return tout_mins_default
 
     @staticmethod
     def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -65,11 +87,6 @@ class Pomodoro:
 
         This method is expected to run before parser.parse_args() is invoked.
         """
-        tout_min_default = get_config().get("pomodoro-default-timeout", None)
-        if tout_min_default is None:
-            tout_min_default = Pomodoro.TOUT_MIN_DEFAULT
-            update_config(update={"pomodoro-default-timeout": tout_min_default})
-
         parser.add_argument(
             "-ps",
             "--pomodoro-start",
@@ -77,8 +94,10 @@ class Pomodoro:
             nargs="*",  # The result is either None or a list containing two strings.
             help=(
                 "Start a pomodoro timer. "
-                "Parameters are a timeout in minutes (from 1 to 180) and a name. "
-                f"Default timeout is {tout_min_default} minutes. "
+                "Parameters are a timeout in minutes "
+                f"(from {Pomodoro.TOUT_MINS_MIN} to {Pomodoro.TOUT_MINS_MAX}) "
+                "and a name. "
+                f"Default timeout is {Pomodoro._get_timeout_mins_default()} minutes. "
                 f"Default name is '{Pomodoro.TMR_NAME_DEFAULT}'."
             ),
         )
@@ -98,26 +117,40 @@ class Pomodoro:
         )
 
     @staticmethod
-    def _start(pomodoro_start: list[str]) -> None:
-        if len(pomodoro_start) == 0:
-            tout_min = Pomodoro.TOUT_MIN_DEFAULT
+    def _start(pomodoro_start_args: list[str]) -> None:
+        if not pomodoro_start_args:
+            tout_mins = Pomodoro._get_timeout_mins_default()
             tmr_name = Pomodoro.TMR_NAME_DEFAULT
-        elif len(pomodoro_start) == 1:
-            tout_min = int(pomodoro_start[0])
+        elif len(pomodoro_start_args) == 1:
+            tout_mins = int(pomodoro_start_args[0])
             tmr_name = Pomodoro.TMR_NAME_DEFAULT
         else:
-            tout_min = int(pomodoro_start[0])
-            tmr_name = " ".join(pomodoro_start[1:])
-        if tout_min < Pomodoro.TOUT_MIN_MIN or tout_min > Pomodoro.TOUT_MIN_MAX:
+            tout_mins = int(pomodoro_start_args[0])
+            tmr_name = " ".join(pomodoro_start_args[1:])
+        if tout_mins < Pomodoro.TOUT_MINS_MIN or tout_mins > Pomodoro.TOUT_MINS_MAX:
             raise ValueError(
-                f"Timeout is out of range [{Pomodoro.TOUT_MIN_MIN}, {Pomodoro.TOUT_MIN_MAX}]."
+                f"Timeout is out of range [{Pomodoro.TOUT_MINS_MIN}, {Pomodoro.TOUT_MINS_MAX}]."
             )
 
         # We don't wait for the process to finish.
         # pylint: disable-next=consider-using-with
-        child = sp.Popen(args=["python3", __file__, str(tout_min), tmr_name])
+        child = sp.Popen(args=["python3", __file__, str(tout_mins), tmr_name])
 
-        print(f"Started a {tout_min}-minute pomodoro timer `{tmr_name}` (pid={child.pid}).\n")
+        print(f"Started a {tout_mins}-minute pomodoro timer `{tmr_name}` (pid={child.pid}).\n")
+
+        log_file_path = pathlib.PosixPath(platformdirs.user_config_dir("dope")) / "pomodoro.log"
+        log_file_path.touch()
+        with log_file_path.open("r+") as file:
+            content = file.read()
+            file.seek(0)
+            starts = datetime.now().astimezone()
+            stops = starts + timedelta(minutes=tout_mins)
+            file.write(
+                f"{starts.strftime('%Y-%m-%d %H:%M:%S')}: "
+                f"'{tmr_name}', {tout_mins} min, pid={child.pid}, "
+                f"stops {stops.strftime('%Y-%m-%d %H:%M:%S')}, "
+                "\n" + content
+            )
 
     @staticmethod
     def _find_all() -> list[_TimerInfo]:
@@ -129,7 +162,7 @@ class Pomodoro:
                     tmr_info_arr.append(
                         _TimerInfo(
                             name=cmd_line[3],
-                            tout_min=int(cmd_line[2]),
+                            tout_mins=int(cmd_line[2]),
                             t_start=proc.create_time(),
                             pid=proc.pid,
                         )
@@ -143,7 +176,7 @@ class Pomodoro:
         tmr_cnt = len(tmr_info_arr)
         print(str(tmr_cnt) + " active pomodoro timer" + ("s" if tmr_cnt > 1 else "") + " found:")
         for i, tmr_info in enumerate(tmr_info_arr, start=1):
-            time_expire = tmr_info.t_start + tmr_info.tout_min * 60
+            time_expire = tmr_info.t_start + tmr_info.tout_mins * 60
             time_to_run = time_expire - time.time()
             time_start_str = time.strftime("%H:%M:%S", time.localtime(tmr_info.t_start))
             time_expire_str = time.strftime("%H:%M:%S", time.localtime(time_expire))
@@ -155,7 +188,7 @@ class Pomodoro:
                 + "(pid="
                 + (Style.BRIGHT + str(tmr_info.pid) + Style.RESET_ALL)
                 + "), "
-                + f"{tmr_info.tout_min} min, "
+                + f"{tmr_info.tout_mins} min, "
                 + f"{time_start_str} -> {time_expire_str}, "
                 + "expires in "
                 + (Style.BRIGHT + str(time_to_run_str) + Style.RESET_ALL)
@@ -168,7 +201,7 @@ class Pomodoro:
         killed_any = False
         for tmr_info in tmr_info_arr:
             if any(s in str(tmr_info.pid) for s in pid_parts):
-                time_expire = tmr_info.t_start + tmr_info.tout_min * 60
+                time_expire = tmr_info.t_start + tmr_info.tout_mins * 60
                 time_to_run = time_expire - time.time()
                 time_to_run_str = time.strftime("%H:%M:%S", time.gmtime(time_to_run))
                 kill_msg = (
@@ -194,9 +227,9 @@ def launch_timer() -> int:
     Launch a pomodoro timer, which will push a desktop notification when expires.
     """
     assert len(sys.argv) == 3
-    tout_min = int(sys.argv[1])
+    tout_mins = int(sys.argv[1])
     tmr_name = sys.argv[2]
-    time.sleep(tout_min * 60)
+    time.sleep(tout_mins * 60)
 
     sp.run(
         [
@@ -206,7 +239,7 @@ def launch_timer() -> int:
             "-a",
             "DOPE",
             "🍅 pomodoro",
-            f"{tout_min} minutes elapsed for `{tmr_name}` (pid={os.getpid()}).",
+            f"{tout_mins} minutes elapsed for `{tmr_name}` (pid={os.getpid()}).",
         ],
         shell=False,
         check=True,
