@@ -12,6 +12,8 @@ from typing import Any
 import psutil
 from colorama import Fore, Style
 
+from dope.config import get_config, update_config
+
 
 @dataclasses.dataclass
 class _TimerInfo:
@@ -63,14 +65,22 @@ class Pomodoro:
 
         This method is expected to run before parser.parse_args() is invoked.
         """
+        tout_min_default = get_config().get("pomodoro-default-timeout", None)
+        if tout_min_default is None:
+            tout_min_default = Pomodoro.TOUT_MIN_DEFAULT
+            update_config(update={"pomodoro-default-timeout": tout_min_default})
+
         parser.add_argument(
             "-ps",
             "--pomodoro-start",
             dest="pomodoro_start",
             nargs="*",  # The result is either None or a list containing two strings.
-            help="Start a pomodoro timer. "
-            "Parameters are a timeout in minutes (from 1 to 180) and a name. "
-            "Default timeout is 30 minutes. Default name is 'default'.",
+            help=(
+                "Start a pomodoro timer. "
+                "Parameters are a timeout in minutes (from 1 to 180) and a name. "
+                f"Default timeout is {tout_min_default} minutes. "
+                f"Default name is '{Pomodoro.TMR_NAME_DEFAULT}'."
+            ),
         )
         parser.add_argument(
             "-pl",
