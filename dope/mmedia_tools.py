@@ -21,7 +21,9 @@ def extract_mp3_segment(
     :param time_to: End time of the segment. It can be a string or an integer.
     """
     logger = logging.getLogger(__name__)
-    assert input_file.exists() and input_file.is_file() and input_file.suffix == ".mp3"
+    assert input_file.exists(), f"'{input_file}' is not found"
+    assert input_file.is_file(), f"'{input_file}' is not a file"
+    assert input_file.suffix == ".mp3", f"'{input_file}' is not MP3"
 
     if output_file.suffix != ".mp3":
         logger.warning(
