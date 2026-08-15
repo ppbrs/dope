@@ -90,10 +90,7 @@ def parse_args() -> dict[str, Any]:
         dest="ide",
         nargs="*",  # The result is None or a list.
         action="store",
-        help=(
-            "Open the vaults in IDE. Supported parameters are `code` and `subl`. "
-            "If none parameters provided, all IDEs will be opened."
-        ),
+        help=("Open the vaults in IDE. Supported parameters: `code`. "),
     )
     prsr.add_argument(
         "-r",

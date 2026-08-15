@@ -20,35 +20,26 @@ _logger = logging.getLogger(__name__)
 class Ide(enum.Enum):
     """Enum for all supported IDEs."""
 
-    SUBLIME_TEXT = enum.auto()
-    VSCODE = enum.auto()
+    CODE = enum.auto()
 
     @staticmethod
     def from_arg(arg: str) -> Ide:
         """Parse user argument for an IDE to one of supported IDEs."""
         match arg:
-            case "subl":
-                return Ide.SUBLIME_TEXT
             case "code":
-                return Ide.VSCODE
+                return Ide.CODE
             case _:
                 raise ValueError(f"Unknown IDE: {arg}.")
 
     def open_vault(self, vault_dir: pathlib.PosixPath) -> None:
         """Open a vault is this IDE."""
         match self:
-            case Ide.VSCODE:
+            case Ide.CODE:
                 code_dir = vault_dir / ".vscode"
                 if code_dir.exists() and code_dir.is_dir():
                     os.system(f"cd {vault_dir} && code .")
                 else:
                     _logger.error("Cannot open `%s` in `VS Code`.", vault_dir.name)
-            case Ide.SUBLIME_TEXT:
-                subl_prj = (vault_dir / vault_dir.name).with_suffix(".sublime-project")
-                if subl_prj.exists() and subl_prj.is_file():
-                    os.system(f"subl {subl_prj}")
-                else:
-                    _logger.error("Cannot open `%s` in `Sublime Text`.", vault_dir.name)
 
 
 class VaultUtils:
@@ -110,22 +101,16 @@ class VaultUtils:
         """
         --ide/-i option opens vaults with specified IDEs.
         """
+        assert isinstance(args["ide"], list)
         ides_known = set(Ide)
-        if args["ide"] == []:
+        if not args["ide"]:
             ides = ides_known
         else:
             ides = set()
             for arg in args["ide"]:
                 ides.add(Ide.from_arg(arg))
-        # ides_unknown = ides - ides_known
-        # if ides_unknown:
-        #     _logger.error("Unknown IDEs: %s.", ", ".join(list(ides_unknown)))
-        # ides = ides & ides_known
-        if not ides:
-            _logger.error("No known IDEs provided.")
-            return 1
-        _logger.info("IDEs: %s", ides)
-        _logger.info("IDEs: %s.", ", ".join(str(ide) for ide in ides))
+            assert ides
+        _logger.info("IDEs (%d): %s.", len(ides), ", ".join(ide.name for ide in ides))
 
         # Open the vaults in the IDEs.
         for vault_dir in get_vault_paths(filter=args["vault"]):

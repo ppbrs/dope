@@ -1,5 +1,4 @@
 *.pyc
-*.sublime-workspace
 *.log
 
 # Distribution files from local builds:
