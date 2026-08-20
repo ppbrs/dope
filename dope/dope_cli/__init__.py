@@ -10,7 +10,7 @@ from pprint import pformat
 
 from dope.config import get_config, get_vault_paths
 from dope.dope_cli.check_list import process_check_list
-from dope.dope_cli.config import process_arguments
+from dope.dope_cli.config import process_config_arguments
 from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.parse_args import parse_args
 from dope.dope_cli.pomodoro import Pomodoro
@@ -62,7 +62,7 @@ def dope_cli() -> int:
         ret_val += Pomodoro.process(args=args)
         ret_val += RoverSync.process(args=args)
         ret_val += Vector.process(args=args)
-        ret_val += process_arguments(args=args)
+        ret_val += process_config_arguments(args=args)
         ret_val += process_check_list(args=args)
 
         return ret_val
