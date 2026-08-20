@@ -84,12 +84,17 @@ def _get_vaults_json_path() -> PosixPath:
     return config_dir_path / "vaults.json"
 
 
-def get_config() -> dict[str, Any]:
-    """Read local dope configuration. Create default configuration if not found."""
-    logger = logging.getLogger(__name__)
+def get_config_path() -> PosixPath:
     config_dir_path = PosixPath(platformdirs.user_config_dir("dope"))
     config_dir_path.mkdir(parents=True, exist_ok=True)
     config_file_path = config_dir_path / "config.json"
+    return config_file_path
+
+
+def get_config() -> dict[str, Any]:
+    """Read local dope configuration. Create default configuration if not found."""
+    logger = logging.getLogger(__name__)
+    config_file_path = get_config_path()
     if not config_file_path.exists():
         logger.warning("App configuration (%s) does not exist. Creating empty.", config_file_path)
         with config_file_path.open("w") as fp:

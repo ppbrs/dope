@@ -65,24 +65,11 @@ def parse_args() -> dict[str, Any]:
     # Vaults related:
     #
     prsr.add_argument(
-        "--config-vault-add",
-        dest="config_vault_add",
-        nargs="+",
+        "--config",
+        dest="config_editor",
+        nargs=1,
         action="store",
-        help=("Add given vault directories to the configuration."),
-    )
-    prsr.add_argument(
-        "--config-vault-list",
-        dest="config_vault_list",
-        action="store_true",
-        help=("List vault directories."),
-    )
-    prsr.add_argument(
-        "--config-vault-drop",
-        dest="config_vault_drop",
-        nargs="+",
-        action="store",
-        help=("Remove given vault directory from the configuration."),
+        help=("Open the config with the provided editor."),
     )
     prsr.add_argument(
         "-i",
