@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-import pathlib
 import re
 from collections.abc import Generator
 from dataclasses import dataclass
 from datetime import date
+from pathlib import PosixPath
 
 from dope.v_note import VNote
-
-_logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -27,6 +25,7 @@ class Task:
     note: str
     priority: int
     deadline: date
+    line_num: int
 
     re_obj_full_tag = re.compile(
         r".*"  # Optional symbols before the tag.
@@ -38,24 +37,23 @@ class Task:
     """
     re_obj_deadline = re.compile(r"^(?P<year>\d\d\d\d)-(?P<month>\d\d)-(?P<day>\d\d)$")
 
-    @classmethod
-    def _parse_line(
-        cls, note_line: str, v_note: VNote, line_num: int
-    ) -> Generator[Task, None, None]:
+    @staticmethod
+    def _parse_line(note_line: str, v_note: VNote, line_num: int) -> Generator[Task, None, None]:
         """Collect all tasks from the given line."""
+        logger = logging.getLogger(__name__)
         if "#" not in note_line:
             return
 
-        matches = cls.re_obj_full_tag.findall(note_line)
+        matches = Task.re_obj_full_tag.findall(note_line)
         if len(matches) > 1:
-            _logger.error("More than 1 task flag in a line: '%s'.", note_line)
+            logger.error("More than 1 task flag in a line: '%s'.", note_line)
         elif len(matches) == 1:
-            mtch_full_tag = cls.re_obj_full_tag.match(note_line)
+            mtch_full_tag = Task.re_obj_full_tag.match(note_line)
             assert mtch_full_tag is not None
             full_tag = mtch_full_tag.groupdict()["full_tag"]
             note_line = note_line.replace(full_tag, "")
 
-            task_cls = cls.get_task_class(full_tag)
+            task_cls = Task.get_task_class(full_tag)
 
             vault = v_note.vault_dir.stem
             note = v_note.note_path.stem
@@ -70,12 +68,12 @@ class Task:
                 and tag_parts[1][1] in {"1", "2", "3"}
             )
             if not tag_ok:
-                _logger.error(
+                logger.error(
                     "Corrupted tag `%s` in '%s/%s', line %d.", full_tag, vault, note, line_num
                 )
             priority = int(tag_parts[1][1:]) if len(tag_parts) > 1 else 1
 
-            mtch_deadline = cls.re_obj_deadline.fullmatch(tag_parts[0][1:])
+            mtch_deadline = Task.re_obj_deadline.fullmatch(tag_parts[0][1:])
             if mtch_deadline is not None:
                 deadline = date(
                     year=int(mtch_deadline.groupdict()["year"]),
@@ -84,18 +82,19 @@ class Task:
                 )
             else:
                 deadline = date.today()
-                _logger.error("Tag `%s` in `%s/%s` has corrupted deadline.", full_tag, vault, note)
+                logger.error("Tag `%s` in `%s/%s` has corrupted deadline.", full_tag, vault, note)
 
             yield task_cls(
-                descr=cls.clean_line(note_line),
+                descr=Task.clean_line(note_line),
                 vault=vault,
                 note=note,
                 priority=priority,
                 deadline=deadline,
+                line_num=line_num,
             )
 
-    @classmethod
-    def clean_line(cls, note_line: str) -> str:
+    @staticmethod
+    def clean_line(note_line: str) -> str:
         """Remove useless symbols."""
         note_line = note_line.replace("\n", "")
         note_line = note_line.replace("\r", "")
@@ -108,11 +107,13 @@ class Task:
             note_line = note_line[1:]
         note_line = note_line.replace("   ", " ")
         note_line = note_line.replace("  ", " ")
+        if note_line.startswith(":"):
+            note_line = note_line[1:]
         note_line = note_line.strip()
         return note_line
 
-    @classmethod
-    def get_task_class(cls, full_tag: str) -> type[TaskNext] | type[TaskWait] | type[TaskNow]:
+    @staticmethod
+    def get_task_class(full_tag: str) -> type[TaskNext] | type[TaskWait] | type[TaskNow]:
         """Determine concrete type of a task using the given tag."""
         if full_tag[-2] == "x":
             return TaskNext
@@ -122,9 +123,10 @@ class Task:
             return TaskNow
         raise RuntimeError
 
-    @classmethod
-    def collect(cls, vault_dirs: list[pathlib.PosixPath]) -> list[Task]:
+    @staticmethod
+    def collect(vault_dirs: list[PosixPath]) -> list[Task]:
         """Find all tasks in all vaults."""
+        logger = logging.getLogger(__name__)
         tasks: list[Task] = []
 
         num_lines = 0
@@ -137,12 +139,12 @@ class Task:
                     in_code_block = not in_code_block
                 if not in_code_block:
                     num_lines += 1
-                    for task in cls._parse_line(
+                    for task in Task._parse_line(
                         note_line=note_line, v_note=v_note, line_num=line_num
                     ):
                         tasks.append(task)
-                        _logger.info("%s", task)
-        _logger.debug("Checked %d lines, collected %d tasks", num_lines, len(tasks))
+                        logger.info("%s", task)
+        logger.debug("Checked %d lines, collected %d tasks", num_lines, len(tasks))
 
         return tasks
 
@@ -173,6 +175,11 @@ class TaskNow(Task):
     """Encapsulates all information about a current action."""
 
     SORTING_PRECEDENCE = 0  # highest
+
+
+# ==================================================================================================
+# TESTS
+# ==================================================================================================
 
 
 def test_task_parse_match_tag() -> None:
@@ -222,3 +229,19 @@ def test_task_parse_match_tag() -> None:
 
         else:
             assert not match, f"No tag expected in '{test_case.string}', but got '{full_tag}'."
+
+
+def test_task_parse_line() -> None:
+    """ """
+    tasks = [
+        *Task._parse_line(
+            note_line="#2026-09-11/n3: Description",
+            v_note=VNote(vault_dir=PosixPath(__file__).parent, note_path=PosixPath(__file__)),
+            line_num=123,
+        )
+    ]
+    assert len(tasks) == 1
+    task = tasks[0]
+    assert isinstance(task, TaskNow)
+    assert task.line_num == 123
+    assert task.descr == "Description"

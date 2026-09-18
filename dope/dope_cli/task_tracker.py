@@ -120,7 +120,7 @@ class TaskTracker:
             print(f"{deadline_str} ", end="")
 
             note_str = Term.underline(Term.bold(task.note))
-            print(f"{task.vault}/{note_str}", end="")
+            print(f"{task.vault}/{note_str} :{task.line_num}", end="")
             print()
 
-            print(f"{task.descr}\n\n", end="")
+            print(f"\t{task.descr}\n\n", end="")
