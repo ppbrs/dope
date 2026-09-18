@@ -6,18 +6,19 @@ from typing import Any
 
 from dope.config import get_vault_paths
 from dope.dope_cli.pomodoro import Pomodoro
+from dope.dope_cli.task_tracker import TaskTracker
 
 _logger = logging.getLogger(__name__)
 
 
 def parse_args() -> dict[str, Any]:
     """Parse and check command line arguments."""
-    prsr = argparse.ArgumentParser(description="""Command-line interface to all vaults.""")
+    parser = argparse.ArgumentParser(description="""Command-line interface to all vaults.""")
 
     #
     # Common:
     #
-    prsr.add_argument(
+    parser.add_argument(
         "-v",
         "--vault",
         dest="vault",
@@ -29,49 +30,14 @@ def parse_args() -> dict[str, Any]:
             "whose names include these tokens."
         ),
     )
-    prsr.add_argument(
+    parser.add_argument(
         "-d", "--debug", dest="debug", action="store_true", help="Show all diagnostic messages."
-    )
-
-    #
-    # Task related:
-    #
-    prsr.add_argument(
-        "-x", "--next", dest="tasks_next", action="store_true", help="Show next tasks."
-    )
-    prsr.add_argument(
-        "-w", "--wait", dest="tasks_wait", action="store_true", help="Show pending tasks."
-    )
-    prsr.add_argument(
-        "-n", "--now", dest="tasks_now", action="store_true", help="Show current tasks."
-    )
-    prsr.add_argument(
-        "-t", "--tasks", dest="tasks_all", action="store_true", help="Show all tasks."
-    )
-    prsr.add_argument(
-        "-p",
-        "--priorities",
-        dest="priorities",
-        nargs="+",
-        default=["123"],
-        action="store",
-        help=(
-            "List of priorities (1=urgent/very important, 2=moderate importance, "
-            '3=not important). "12" means both "1" and "2\'.'
-        ),
     )
 
     #
     # Vaults related:
     #
-    prsr.add_argument(
-        "--config",
-        dest="config_editor",
-        nargs=1,
-        action="store",
-        help=("Open the config with the provided editor."),
-    )
-    prsr.add_argument(
+    parser.add_argument(
         "-i",
         "--ide",
         dest="ide",
@@ -79,7 +45,7 @@ def parse_args() -> dict[str, Any]:
         action="store",
         help=("Open the vaults in IDE. Supported parameters: `code`. "),
     )
-    prsr.add_argument(
+    parser.add_argument(
         "-r",
         "--rover",
         dest="rover",
@@ -87,7 +53,7 @@ def parse_args() -> dict[str, Any]:
         action="store",
         help="Synchronize with my smartphone; parameters are `dry` or `wet`.",
     )
-    prsr.add_argument(
+    parser.add_argument(
         "--test",
         dest="test",
         action="store_true",
@@ -99,8 +65,8 @@ def parse_args() -> dict[str, Any]:
         See more at https://docs.pytest.org/en/6.2.x/usage.html.
         """,
     )
-    prsr.add_argument("--stat", dest="stat", action="store_true", help="Show vault statistics.")
-    prsr.add_argument(
+    parser.add_argument("--stat", dest="stat", action="store_true", help="Show vault statistics.")
+    parser.add_argument(
         "--vector",
         dest="vector",
         action="store_true",
@@ -110,7 +76,7 @@ def parse_args() -> dict[str, Any]:
     #
     # Education related:
     #
-    prsr.add_argument(
+    parser.add_argument(
         "-e",
         "--edu",
         dest="edu",
@@ -122,26 +88,34 @@ def parse_args() -> dict[str, Any]:
     #
     # Other
     #
-    prsr.add_argument(
+    parser.add_argument(
         "-cl",
         "--check-list",
         dest="check_list",
         action="store_true",
         help="Open the check-list file.",
     )
+    parser.add_argument(
+        "--config",
+        dest="config_editor",
+        nargs=1,
+        action="store",
+        help=("Open the config with the provided editor."),
+    )
 
     #
     # --
     #
-    prsr.add_argument(
+    parser.add_argument(
         "remainder",
         nargs=argparse.REMAINDER,
         help="Arguments to pass to the underlying tool.",
     )
 
-    Pomodoro.add_arguments(parser=prsr)
+    TaskTracker.add_arguments(parser=parser)
+    Pomodoro.add_arguments(parser=parser)
 
-    args = prsr.parse_args().__dict__
+    args = parser.parse_args().__dict__
 
     # Sanity check
     vault_filter: None | list[str] = args["vault"]

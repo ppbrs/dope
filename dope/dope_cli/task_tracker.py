@@ -2,7 +2,9 @@
 Executing user requests related to tasks.
 """
 
+import argparse
 import logging
+from datetime import date
 from typing import Any
 
 from dope.config import get_vault_paths
@@ -21,6 +23,46 @@ class TaskTracker:
     def __init__(self) -> None:
         self.ret_val: int = 0
 
+    @staticmethod
+    def add_arguments(parser: argparse.ArgumentParser) -> None:
+        """
+        Add arguments to the provided argument parser.
+
+        This method is expected to run before parser.parse_args() is invoked.
+        """
+        task_group = parser.add_argument_group("Task tracker")
+        task_group.add_argument(
+            "-x", "--next", dest="tasks_next", action="store_true", help="Show next tasks."
+        )
+        task_group.add_argument(
+            "-w", "--wait", dest="tasks_wait", action="store_true", help="Show pending tasks."
+        )
+        task_group.add_argument(
+            "-n", "--now", dest="tasks_now", action="store_true", help="Show current tasks."
+        )
+        task_group.add_argument(
+            "-t", "--tasks", dest="tasks_all", action="store_true", help="Show all tasks."
+        )
+        task_group.add_argument(
+            "-f",
+            "--show-future-tasks",
+            dest="show_future_tasks",
+            action="store_true",
+            help="When showing tasks, include future tasks.",
+        )
+        task_group.add_argument(
+            "-p",
+            "--priorities",
+            dest="priorities",
+            nargs="+",
+            default=["123"],
+            action="store",
+            help=(
+                "List of priorities (1=urgent/very important, 2=moderate importance, "
+                '3=not important). "12" means both "1" and "2\'.'
+            ),
+        )
+
     def process(self, args: dict[str, Any]) -> int:
         """
         Executing user's requests related to tasks.
@@ -36,6 +78,9 @@ class TaskTracker:
 
         tasks = self._filter_by_priority(tasks=tasks, args=args)
         _logger.debug("Filtered %d tasks by priority.", len(tasks))
+
+        tasks = self._filter_by_due_date(tasks=tasks, args=args)
+        _logger.debug("Filtered %d tasks by due date.", len(tasks))
 
         # Sort them.
         def sort_func(task: Task) -> tuple[int, int, int]:
@@ -94,6 +139,17 @@ class TaskTracker:
         return tasks_flt
 
     @staticmethod
+    def _filter_by_due_date(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
+        """Filter tasks by due date."""
+        show_future_tasks = args["show_future_tasks"]
+        today = date.today()
+        tasks_flt = []
+        for task in tasks:
+            if task.deadline <= today or show_future_tasks:
+                tasks_flt.append(task)
+        return tasks_flt
+
+    @staticmethod
     def _print_tasks(tasks: list[Task]) -> None:
         """Output the list of tasks to the terminal."""
         for task in tasks:
@@ -120,7 +176,7 @@ class TaskTracker:
             print(f"{deadline_str} ", end="")
 
             note_str = Term.underline(Term.bold(task.note))
-            print(f"{task.vault}/{note_str}", end="")
+            print(f"{task.vault}/{note_str} :{task.line_num}", end="")
             print()
 
-            print(f"{task.descr}\n\n", end="")
+            print(f"\t{task.descr}\n\n", end="")

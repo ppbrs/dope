@@ -87,7 +87,8 @@ class Pomodoro:
 
         This method is expected to run before parser.parse_args() is invoked.
         """
-        parser.add_argument(
+        pomodoro_group = parser.add_argument_group("Pomodoro timers 🍅")
+        pomodoro_group.add_argument(
             "-ps",
             "--pomodoro-start",
             dest="pomodoro_start",
@@ -101,14 +102,14 @@ class Pomodoro:
                 f"Default name is '{Pomodoro.TMR_NAME_DEFAULT}'."
             ),
         )
-        parser.add_argument(
+        pomodoro_group.add_argument(
             "-pl",
             "--pomodoro-list",
             dest="pomodoro_list",
             action="store_true",  # The result is a boolean.
             help="List all active timers.",
         )
-        parser.add_argument(
+        pomodoro_group.add_argument(
             "-pk",
             "--pomodoro-kill",
             dest="pomodoro_kill",
