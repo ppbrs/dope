@@ -27,14 +27,15 @@ class Lesson:
     descr: str
     vault: str
     note: str
+    line_num: int
     tag: str
     course: str
     action: str  # one of _actions
 
     _actions = {"x", "n", "w", "big"}
 
-    @classmethod
-    def collect(cls, vault_dirs: list[pathlib.PosixPath], course_filter: list[str]) -> list[Lesson]:
+    @staticmethod
+    def collect(vault_dirs: list[pathlib.PosixPath], course_filter: list[str]) -> list[Lesson]:
         """Find all lessons in all vaults.
 
         A line of the form "... #edu/{course}/{action}[:] {descr}" is considered a lesson.
@@ -46,12 +47,14 @@ class Lesson:
             with open(v_note.note_path, "r", encoding="utf8") as note_fd:
                 note_lines = note_fd.readlines()
             in_code_block = False
-            for note_line in note_lines:
+            for line_num, note_line in enumerate(note_lines, start=1):
                 if note_line.startswith("```"):
                     in_code_block = not in_code_block
                 if not in_code_block:
                     num_lines += 1
-                    for lesson in cls._parse_line(note_line=note_line, v_note=v_note):
+                    for lesson in Lesson._parse_line(
+                        note_line=note_line, v_note=v_note, line_num=line_num
+                    ):
                         if not course_filter:
                             lessons.append(lesson)
                         else:
@@ -64,8 +67,8 @@ class Lesson:
 
         return lessons
 
-    @classmethod
-    def _parse_line(cls, note_line: str, v_note: VNote) -> Iterator[Lesson]:
+    @staticmethod
+    def _parse_line(note_line: str, v_note: VNote, line_num: int) -> Iterator[Lesson]:
         """Collect all lessons from the given line."""
         if "#edu/" not in note_line:
             return
@@ -86,7 +89,8 @@ class Lesson:
 
                 vault = v_note.vault_dir.name
                 note = v_note.note_path.stem
-                descr = Task.clean_line(note_line.replace(tag, ""))
+                descr = note_line.replace(tag, "")
+                descr = Task.clean_line(descr)
                 if action.lower() not in Lesson._actions:
                     _logger.warning(
                         "Unrecognized lesson action `%s` in %s (%s/%s: %s)",
@@ -97,11 +101,20 @@ class Lesson:
                         descr,
                     )
                 yield Lesson(
-                    vault=vault, note=note, tag=tag, descr=descr, course=course, action=action
+                    vault=vault,
+                    note=note,
+                    line_num=line_num,
+                    tag=tag,
+                    descr=descr,
+                    course=course,
+                    action=action,
                 )
 
     def pretty_str(self) -> str:
-        return f"{self.vault}/{Term.underline(Term.bold(self.note))}: {self.descr}."
+        """Prepare Lesson description with colors and other decoration."""
+        return (
+            f"{self.vault}/{Term.underline(Term.bold(self.note))}:{self.line_num}: '{self.descr}'."
+        )
 
 
 class EduTracker:
@@ -130,7 +143,7 @@ class EduTracker:
 
         print(Term.green("LESSONS:"))
 
-        # Print as course -> action -> vault -> note -> description.
+        # Print as course -> action -> vault -> note -> line_num -> description.
         for course in sorted(courses):
             print(f"{course}")
             actions = set(stsk.action for stsk in lessons if stsk.course == course)

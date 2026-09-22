@@ -107,6 +107,7 @@ class Task:
             note_line = note_line[1:]
         note_line = note_line.replace("   ", " ")
         note_line = note_line.replace("  ", " ")
+        note_line = note_line.strip()
         if note_line.startswith(":"):
             note_line = note_line[1:]
         note_line = note_line.strip()
