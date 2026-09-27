@@ -167,10 +167,13 @@ class EduTracker:
         print("--------")
         print("STATS:")
         print(f"{len(courses)} courses, {len(lessons)} lessons")
-        rnd_lesson_idx = int(os.urandom(4).hex(), 16) % len(lessons)
-        print(
-            f"selected: {lessons[rnd_lesson_idx].pretty_str()}",
-        )
+        if lessons:
+            print("--------")
+            print("SELECTED:")
+            rnd_lesson_idx = int(os.urandom(4).hex(), 16) % len(lessons)
+            rnd_lesson = lessons[rnd_lesson_idx]
+            print(f"\t{rnd_lesson.course}")
+            print(f"\t{rnd_lesson.pretty_str()}")
         print("--------")
 
         return self.ret_val
