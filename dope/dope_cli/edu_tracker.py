@@ -4,6 +4,7 @@ Executing user requests related to my education.
 
 from __future__ import annotations
 
+import argparse
 import logging
 import os
 import pathlib
@@ -187,3 +188,19 @@ class EduTracker:
                     filtered.append(subtask)
             lessons = filtered
         return lessons
+
+    @staticmethod
+    def add_arguments(parser: argparse.ArgumentParser) -> None:
+        """
+        Add arguments to the provided argument parser.
+
+        This method is expected to run before parser.parse_args() is invoked.
+        """
+        parser.add_argument(
+            "-e",
+            "--edu",
+            dest="edu",
+            nargs="*",  # The result is None or a list.
+            action="store",
+            help="List all education tasks: lessons and quizzes.",
+        )

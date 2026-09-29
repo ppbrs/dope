@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from dope.config import get_vault_paths
+from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.pomodoro import Pomodoro
 from dope.dope_cli.task_tracker import TaskTracker
 
@@ -74,18 +75,6 @@ def parse_args() -> dict[str, Any]:
     )
 
     #
-    # Education related:
-    #
-    parser.add_argument(
-        "-e",
-        "--edu",
-        dest="edu",
-        nargs="*",  # The result is None or a list.
-        action="store",
-        help="List all education tasks: lessons and quizzes.",
-    )
-
-    #
     # Other
     #
     parser.add_argument(
@@ -112,6 +101,7 @@ def parse_args() -> dict[str, Any]:
         help="Arguments to pass to the underlying tool.",
     )
 
+    EduTracker.add_arguments(parser=parser)
     TaskTracker.add_arguments(parser=parser)
     Pomodoro.add_arguments(parser=parser)
 
