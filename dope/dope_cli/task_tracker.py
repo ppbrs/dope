@@ -17,12 +17,6 @@ _logger = logging.getLogger(__name__)
 class TaskTracker:
     """An object of this class collects tasks and prints them according to user requests."""
 
-    # There are many private methods instead, thus creating a class is still worth it.
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self) -> None:
-        self.ret_val: int = 0
-
     @staticmethod
     def add_arguments(parser: argparse.ArgumentParser) -> None:
         """
@@ -31,18 +25,41 @@ class TaskTracker:
         This method is expected to run before parser.parse_args() is invoked.
         """
         task_group = parser.add_argument_group("Task tracker")
+
+        optional_keywords_help = "If keywords are given, only tasks that contain them in note title or task description will be shown."
         task_group.add_argument(
-            "-x", "--next", dest="tasks_next", action="store_true", help="Show next tasks."
+            "-x",
+            "--next",
+            dest="tasks_next",
+            help=f"Show next tasks. {optional_keywords_help}",
+            nargs="*",  # 0 or any number
+            default=None,  # if omitted
         )
         task_group.add_argument(
-            "-w", "--wait", dest="tasks_wait", action="store_true", help="Show pending tasks."
+            "-w",
+            "--wait",
+            dest="tasks_wait",
+            help=f"Show pending tasks. {optional_keywords_help}",
+            nargs="*",  # 0 or any number
+            default=None,  # if omitted
         )
         task_group.add_argument(
-            "-n", "--now", dest="tasks_now", action="store_true", help="Show current tasks."
+            "-n",
+            "--now",
+            dest="tasks_now",
+            help=f"Show current tasks. {optional_keywords_help}",
+            nargs="*",  # 0 or any number
+            default=None,  # if omitted
         )
         task_group.add_argument(
-            "-t", "--tasks", dest="tasks_all", action="store_true", help="Show all tasks."
+            "-t",
+            "--tasks",
+            dest="tasks_all",
+            help=f"Show all tasks. {optional_keywords_help}",
+            nargs="*",  # 0 or any number
+            default=None,  # if omitted
         )
+
         task_group.add_argument(
             "-f",
             "--show-future-tasks",
@@ -50,11 +67,12 @@ class TaskTracker:
             action="store_true",
             help="When showing tasks, include future tasks.",
         )
+
         task_group.add_argument(
             "-p",
             "--priorities",
             dest="priorities",
-            nargs="+",
+            nargs="+",  # 1 or more
             default=["123"],
             action="store",
             help=(
@@ -63,23 +81,52 @@ class TaskTracker:
             ),
         )
 
-    def process(self, args: dict[str, Any]) -> int:
-        """
-        Executing user's requests related to tasks.
-        """
-        if not any((args["tasks_next"], args["tasks_wait"], args["tasks_now"], args["tasks_all"])):
-            return self.ret_val
+    __slots__ = (
+        "tasks_next",
+        "tasks_wait",
+        "tasks_now",
+        "tasks_all",
+        "show_future_tasks",
+        "priorities",
+    )
+    tasks_next: list[str] | None
+    tasks_wait: list[str] | None
+    tasks_now: list[str] | None
+    tasks_all: list[str] | None
+    show_future_tasks: bool
+    priorities: list[str]
+
+    def __init__(self, args: dict[str, Any]) -> None:
+        self.tasks_next = args["tasks_next"]
+        self.tasks_wait = args["tasks_wait"]
+        self.tasks_now = args["tasks_now"]
+        self.tasks_all = args["tasks_all"]
+        self.show_future_tasks = args["show_future_tasks"]
+        self.priorities = args["priorities"]
+
+    @staticmethod
+    def process(args: dict[str, Any]) -> int:
+        """Executing user's requests related to tasks."""
+        self = TaskTracker(args=args)
+        if not any(
+            t is not None
+            for t in (self.tasks_next, self.tasks_wait, self.tasks_now, self.tasks_all)
+        ):
+            return 0
 
         vault_dirs = get_vault_paths(filter=args["vault"])
-        tasks = Task.collect(vault_dirs=vault_dirs)
+        return self.process_method(tasks=Task.collect(vault_dirs=vault_dirs))
 
-        tasks = self._filter_by_type(tasks=tasks, args=args)
+    def process_method(self, tasks: list[Task]) -> int:
+        """Filter and print."""
+
+        tasks = self._filter_by_type(tasks=tasks)
         _logger.debug("Filtered %d tasks by type.", len(tasks))
 
-        tasks = self._filter_by_priority(tasks=tasks, args=args)
+        tasks = self._filter_by_priority(tasks=tasks)
         _logger.debug("Filtered %d tasks by priority.", len(tasks))
 
-        tasks = self._filter_by_due_date(tasks=tasks, args=args)
+        tasks = self._filter_by_due_date(tasks=tasks)
         _logger.debug("Filtered %d tasks by due date.", len(tasks))
 
         # Sort them.
@@ -89,33 +136,41 @@ class TaskTracker:
         tasks = sorted(tasks, key=sort_func, reverse=True)
 
         self._print_tasks(tasks)
-        return self.ret_val
+        return 1
 
-    @staticmethod
-    def _filter_by_type(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
+    def _filter_by_type(self, tasks: list[Task]) -> list[Task]:
         """Filter tasks by type."""
         tasks_flt = []
         for task in tasks:
-            if args["tasks_all"]:
+            if self._filter_one(task, self.tasks_all):
                 tasks_flt.append(task)
-            elif isinstance(task, TaskNext) and args["tasks_next"]:
+            elif isinstance(task, TaskNext) and self._filter_one(task, self.tasks_next):
                 tasks_flt.append(task)
-            elif isinstance(task, TaskNow) and args["tasks_now"]:
+            elif isinstance(task, TaskNow) and self._filter_one(task, self.tasks_now):
                 tasks_flt.append(task)
-            elif isinstance(task, TaskWait) and args["tasks_wait"]:
+            elif isinstance(task, TaskWait) and self._filter_one(task, self.tasks_wait):
                 tasks_flt.append(task)
         return tasks_flt
 
     @staticmethod
-    def _filter_by_priority(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
+    def _filter_one(task: Task, filter_value: list[str] | None) -> bool:
+        if filter_value is None:
+            return False
+        if filter_value:
+            match = False
+            for word in filter_value:
+                if word.lower() in task.note.lower() or word.lower() in task.descr.lower():
+                    match = True
+            return match
+        return True  # filter_value is an empty list
+
+    def _filter_by_priority(self, tasks: list[Task]) -> list[Task]:
         """Filter tasks by their priority."""
         # Only 1, 2, 3, or any combination of them are accepted.
-        priorities = args["priorities"]
-        assert isinstance(priorities, list)
-        assert all(isinstance(i, str) for i in priorities)
-        priorities = set("".join(priorities))
+        assert isinstance(self.priorities, list)
+        assert all(isinstance(s, str) for s in self.priorities)
         try:
-            priorities = {int(i) for i in priorities}
+            priorities = {int(c) for c in "".join(self.priorities)}
         except ValueError as err:
             raise ValueError("Priorities must be integers.") from err
         assert all(int(i) in [1, 2, 3] for i in priorities), (
@@ -138,14 +193,12 @@ class TaskTracker:
                     raise ValueError(f"Unsupported priority: {task.priority}")
         return tasks_flt
 
-    @staticmethod
-    def _filter_by_due_date(tasks: list[Task], args: dict[str, Any]) -> list[Task]:
+    def _filter_by_due_date(self, tasks: list[Task]) -> list[Task]:
         """Filter tasks by due date."""
-        show_future_tasks = args["show_future_tasks"]
         today = date.today()
         tasks_flt = []
         for task in tasks:
-            if task.deadline <= today or show_future_tasks:
+            if task.deadline <= today or self.show_future_tasks:
                 tasks_flt.append(task)
         return tasks_flt
 

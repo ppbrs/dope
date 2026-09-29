@@ -56,7 +56,7 @@ def dope_cli() -> int:
         else:
             _logger.warning("No vaults configured.")
 
-        ret_val: int = TaskTracker().process(args=args)
+        ret_val: int = TaskTracker.process(args=args)
         ret_val += EduTracker().process(args=args)
         ret_val += VaultUtils.process(args=args)
         ret_val += Pomodoro.process(args=args)
