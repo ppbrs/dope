@@ -81,6 +81,9 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
         Hotkey("workspace:toggle-pin", ["Alt"], "P"),
         Hotkey("editor:toggle-code", ["Alt"], "C"),
         Hotkey("editor:toggle-highlight", ["Alt"], "H"),
+        #
+        Hotkey("app:toggle-left-sidebar", ["Mod"], "0"),
+        Hotkey("app:toggle-right-sidebar", ["Alt"], "0"),
     ]
 
     hk_path = vault_dir / ".obsidian" / "hotkeys.json"
