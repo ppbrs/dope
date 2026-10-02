@@ -54,20 +54,7 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
 
     # Hotkeys that must be in hotkeys.json:
     hk_exp = [
-        Hotkey(
-            "app:toggle-left-sidebar",
-            [
-                "Mod",
-            ],
-            "0",
-        ),
-        Hotkey(
-            "editor:insert-wikilink",
-            [
-                "Mod",
-            ],
-            "K",
-        ),
+        Hotkey("editor:insert-wikilink", ["Mod"], "K"),
         Hotkey("app:open-vault", ["Mod", "Shift"], "V"),
         Hotkey("file-explorer:reveal-active-file", ["Mod", "Shift"], "Y"),
         Hotkey("editor:swap-line-down", ["Alt"], "ArrowDown"),
@@ -84,6 +71,10 @@ def test_v_settings_hotkeys(vault_dir: pathlib.PosixPath) -> None:
         #
         Hotkey("app:toggle-left-sidebar", ["Mod"], "0"),
         Hotkey("app:toggle-right-sidebar", ["Alt"], "0"),
+        #
+        Hotkey(
+            "duplicate-line:duplicate-line", ["Alt"], "Q"
+        ),  # my custom hotkey for the duplicate-line plugin
     ]
 
     hk_path = vault_dir / ".obsidian" / "hotkeys.json"
@@ -171,10 +162,11 @@ def test_v_settings_community_plugins(vault_dir: pathlib.PosixPath) -> None:
     """Check that all required community plugins are installed for each vault."""
     plugins_required = frozenset(
         [
-            "homepage",
-            "obsidian-plantuml",
             "better-export-pdf",
+            "duplicate-line",  # https://github.com/msztolcman/obsidian-duplicate-line
+            "homepage",
             "obsidian-graphviz",
+            "obsidian-plantuml",
         ]
     )
 
