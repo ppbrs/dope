@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import abc
 import dataclasses
 import logging
 import re
@@ -9,13 +10,24 @@ from collections.abc import Generator
 from dataclasses import dataclass
 from datetime import date
 from pathlib import PosixPath
+from typing import override
 
 from dope.v_note import VNote
 
 
 @dataclass
-class Task:
+class Task(abc.ABC):
     """Encapsulates all information about a task."""
+
+    __slots__ = {
+        "descr": "...",
+        "vault": "The name of the vault, e.g. 'vault'.",
+        "note": "...",
+        "note_rel_path": "Note path relat",
+        "priority": "...",
+        "deadline": "...",
+        "line_num": "...",
+    }
 
     SORTING_PRECEDENCE = -1
     """It is considered when listing tasks."""
@@ -23,6 +35,7 @@ class Task:
     descr: str
     vault: str
     note: str
+    note_rel_path: str
     priority: int
     deadline: date
     line_num: int
@@ -88,6 +101,7 @@ class Task:
                 descr=Task.clean_line(note_line),
                 vault=vault,
                 note=note,
+                note_rel_path=str(v_note.note_path.relative_to(v_note.vault_dir)),
                 priority=priority,
                 deadline=deadline,
                 line_num=line_num,
@@ -159,11 +173,27 @@ class Task:
         weekday_str = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][weekday_idx]
         return str(self.deadline) + " " + weekday_str
 
+    @abc.abstractmethod
+    def get_type_priority_short_string(self) -> str:
+        """Return, e.g., N1, W3."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_type_string(self) -> str:
+        """Return, e.g., Now."""
+        raise NotImplementedError
+
 
 class TaskNext(Task):
     """Encapsulates all information about a next action."""
 
     SORTING_PRECEDENCE = 1
+
+    def get_type_priority_short_string(self) -> str:
+        return f"X{self.priority}"
+
+    def get_type_string(self) -> str:
+        return "Next"
 
 
 class TaskWait(Task):
@@ -171,11 +201,22 @@ class TaskWait(Task):
 
     SORTING_PRECEDENCE = 2  # lowest
 
+    def get_type_priority_short_string(self) -> str:
+        return f"W{self.priority}"
+
+    def get_type_string(self) -> str:
+        return "Wait"
 
 class TaskNow(Task):
     """Encapsulates all information about a current action."""
 
     SORTING_PRECEDENCE = 0  # highest
+
+    def get_type_priority_short_string(self) -> str:
+        return f"N{self.priority}"
+
+    def get_type_string(self) -> str:
+        return "Now"
 
 
 # ==================================================================================================

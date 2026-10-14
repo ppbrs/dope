@@ -3,7 +3,9 @@ Executing user requests related to tasks.
 """
 
 import argparse
+import datetime
 import logging
+import pathlib
 from datetime import date
 from typing import Any
 
@@ -136,6 +138,8 @@ class TaskTracker:
         tasks = sorted(tasks, key=sort_func, reverse=True)
 
         self._print_tasks(tasks)
+
+        self._write_tasks(tasks)
         return 1
 
     def _filter_by_type(self, tasks: list[Task]) -> list[Task]:
@@ -207,11 +211,11 @@ class TaskTracker:
         """Output the list of tasks to the terminal."""
         for task in tasks:
             if isinstance(task, TaskNext):
-                task_str = Term.yellow(f"#X{task.priority}")
+                task_str = Term.yellow(task.get_type_priority_short_string())
             elif isinstance(task, TaskNow):
-                task_str = Term.green(f"#N{task.priority}")
+                task_str = Term.green(task.get_type_priority_short_string())
             elif isinstance(task, TaskWait):
-                task_str = Term.red(f"#W{task.priority}")
+                task_str = Term.red(task.get_type_priority_short_string())
             else:
                 raise RuntimeError(str(task))
             if task.priority == 1:
@@ -233,3 +237,64 @@ class TaskTracker:
             print()
 
             print(f"\t{task.descr}\n\n", end="")
+
+    @staticmethod
+    def _write_tasks(tasks: list[Task]) -> None:
+        """Write to TASKS.md for each vault that contains tasks."""
+        vaults: dict[str, pathlib.PosixPath] = {}
+        for task in tasks:
+            vault_name = task.vault
+            if vault_name not in vaults:
+                vault_dirs = get_vault_paths(filter=[vault_name])
+                assert len(vault_dirs) == 1
+                vaults[vault_name] = vault_dirs[0]
+        for vault_name, vault_dir in vaults.items():
+            tasks_path = vault_dir / "TASKS.md"
+            existed = tasks_path.exists()
+            if not existed:
+                _logger.info("Creating '%s'.", tasks_path)
+                tasks_path.touch()
+            else:
+                _logger.info("'%s' already exists", tasks_path)
+
+            text_orig: list[str] = tasks_path.read_text().splitlines()
+            _logger.info("%d lines", len(text_orig))
+
+            text_new: list[str] = []
+
+            dt_str = datetime.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S")
+            text_new.append(f"Updated {dt_str}")
+
+            last_written_task_type: str | None = None
+            for task in reversed(tasks):
+                if task.vault != vault_name:
+                    continue
+
+                dl_str = task.get_deadline_string()
+                days = task.get_days_to_dealine()
+                if days == 0:
+                    deadline_str = f'<span style="color:green">today, {dl_str}</span>'
+                elif days > 0:
+                    deadline_str = f"in {days} days, {dl_str}"
+                else:
+                    deadline_str = f'<span style="color:red">{days} days ago, {dl_str}</span>'
+
+                note_rel_path = task.note_rel_path.replace(" ", "%20")
+
+                if type(task).__name__ != last_written_task_type:
+                    text_new.append("***")
+                    text_new.append(f"# {task.get_type_string().upper()}\n")
+
+                text_new.append(
+                    f"**{task.get_type_priority_short_string()}** {deadline_str}\n"
+                    f"\t\t[**{task.note}** :{task.line_num}]({note_rel_path})\n"
+                    f"\t\t\t\t{task.descr}\n"
+                    ""
+                )
+
+                last_written_task_type = type(task).__name__
+
+            text_new.append("***\n")
+
+            tasks_path.write_text("\n".join(text_new))
+            print(f"'{tasks_path}' was updated.")
