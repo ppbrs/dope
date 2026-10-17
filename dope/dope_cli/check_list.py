@@ -22,15 +22,18 @@ def process_check_list(args: dict[str, Any]) -> int:
             if not cl_path.exists():
                 print(f"Check list doesn't exist: '{cl_path}'")
             else:
+                app = "libreoffice"
                 proc: subprocess.Popen[str] = subprocess.Popen(
-                    ["xdg-open", str(cl_path)],
+                    [app, cl_path],
                     shell=False,
                     text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    start_new_session=True,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                 )
                 if proc.returncode:
-                    print(f"Opening '{cl_path}' with xdg-open failed, returned {proc.returncode}")
+                    print(f"Opening '{cl_path}' with '{app}' failed, returned {proc.returncode}")
                 else:
-                    print(f"Opening '{cl_path}' with xdg-open OK")
+                    print(f"Opening '{cl_path}' with '{app}' OK")
     return 0
