@@ -211,11 +211,11 @@ class TaskTracker:
         """Output the list of tasks to the terminal."""
         for task in tasks:
             if isinstance(task, TaskNext):
-                task_str = Term.yellow(task.get_type_string())
+                task_str = Term.yellow(task.get_type_priority_short_string())
             elif isinstance(task, TaskNow):
-                task_str = Term.green(task.get_type_string())
+                task_str = Term.green(task.get_type_priority_short_string())
             elif isinstance(task, TaskWait):
-                task_str = Term.red(task.get_type_string())
+                task_str = Term.red(task.get_type_priority_short_string())
             else:
                 raise RuntimeError(str(task))
             if task.priority == 1:
@@ -240,7 +240,7 @@ class TaskTracker:
 
     @staticmethod
     def _write_tasks(tasks: list[Task]) -> None:
-        """Write to TASKS.md in each vault."""
+        """Write to TASKS.md for each vault that contains tasks."""
         vaults: dict[str, pathlib.PosixPath] = {}
         for task in tasks:
             vault_name = task.vault
@@ -254,13 +254,11 @@ class TaskTracker:
             if not existed:
                 _logger.info("Creating '%s'.", tasks_path)
                 tasks_path.touch()
-                # tasks_path.write_text("just created ...\r\n\r\n")
             else:
                 _logger.info("'%s' already exists", tasks_path)
 
             text_orig: list[str] = tasks_path.read_text().splitlines()
             _logger.info("%d lines", len(text_orig))
-            # assert len(text) >= 2, text
 
             text_new: list[str] = []
 
@@ -284,10 +282,11 @@ class TaskTracker:
                 note_rel_path = task.note_rel_path.replace(" ", "%20")
 
                 if type(task).__name__ != last_written_task_type:
-                    text_new.append("***\n")
+                    text_new.append("***")
+                    text_new.append(f"# {task.get_type_string().upper()}\n")
 
                 text_new.append(
-                    f"**{task.get_type_string()}** {deadline_str}\n"
+                    f"**{task.get_type_priority_short_string()}** {deadline_str}\n"
                     f"\t\t[**{task.note}** :{task.line_num}]({note_rel_path})\n"
                     f"\t\t\t\t{task.descr}\n"
                     ""

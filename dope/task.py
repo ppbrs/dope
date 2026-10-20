@@ -174,8 +174,13 @@ class Task(abc.ABC):
         return str(self.deadline) + " " + weekday_str
 
     @abc.abstractmethod
-    def get_type_string(self) -> str:
+    def get_type_priority_short_string(self) -> str:
         """Return, e.g., N1, W3."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_type_string(self) -> str:
+        """Return, e.g., Now."""
         raise NotImplementedError
 
 
@@ -184,8 +189,11 @@ class TaskNext(Task):
 
     SORTING_PRECEDENCE = 1
 
-    def get_type_string(self) -> str:
+    def get_type_priority_short_string(self) -> str:
         return f"X{self.priority}"
+
+    def get_type_string(self) -> str:
+        return "Next"
 
 
 class TaskWait(Task):
@@ -193,17 +201,22 @@ class TaskWait(Task):
 
     SORTING_PRECEDENCE = 2  # lowest
 
-    def get_type_string(self) -> str:
+    def get_type_priority_short_string(self) -> str:
         return f"W{self.priority}"
 
+    def get_type_string(self) -> str:
+        return "Wait"
 
 class TaskNow(Task):
     """Encapsulates all information about a current action."""
 
     SORTING_PRECEDENCE = 0  # highest
 
-    def get_type_string(self) -> str:
+    def get_type_priority_short_string(self) -> str:
         return f"N{self.priority}"
+
+    def get_type_string(self) -> str:
+        return "Now"
 
 
 # ==================================================================================================
