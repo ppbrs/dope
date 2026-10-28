@@ -71,6 +71,17 @@ class TaskTracker:
         )
 
         task_group.add_argument(
+            "-u",
+            "--update-dates",
+            dest="update_dates",
+            action="store_true",
+            help=(
+                "Rewrite older task dates to today. "
+                "Applies to all types of tasks regardless the provided filter."
+            ),
+        )
+
+        task_group.add_argument(
             "-p",
             "--priorities",
             dest="priorities",
@@ -94,10 +105,10 @@ class TaskTracker:
         error_msg_ending = (
             "requires either -t/--tasks or -x/--next or -n/--now or -w/--wait to be provided."
         )
-        if "priorities" in args and not is_tasks_cmd:
-            parser.error(f"Argument -p/--priorities {error_msg_ending}")
-        if "show_future_tasks" in args and not is_tasks_cmd:
+        if args["show_future_tasks"] and not is_tasks_cmd:
             parser.error(f"Argument -f/--show-future-tasks {error_msg_ending}")
+        if args["update_dates"] and not is_tasks_cmd:
+            parser.error(f"Argument --update-dates {error_msg_ending}")
 
     __slots__ = (
         "tasks_next",
@@ -133,7 +144,9 @@ class TaskTracker:
             return 0
 
         vault_dirs = get_vault_paths(filter=args["vault"])
-        return self.process_method(tasks=Task.collect(vault_dirs=vault_dirs))
+        return self.process_method(
+            tasks=Task.collect(vault_dirs=vault_dirs, update_dates=args["update_dates"])
+        )
 
     def process_method(self, tasks: list[Task]) -> int:
         """Filter and print."""

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import abc
+import copy
 import dataclasses
 import logging
 import re
@@ -10,7 +11,6 @@ from collections.abc import Generator
 from dataclasses import dataclass
 from datetime import date
 from pathlib import PosixPath
-from typing import override
 
 from dope.v_note import VNote
 
@@ -26,7 +26,7 @@ class Task(abc.ABC):
         "note_rel_path": "Note path relat",
         "priority": "...",
         "deadline": "...",
-        "line_num": "...",
+        "line_num": "1-based line number of where the task in the note is.",
     }
 
     SORTING_PRECEDENCE = -1
@@ -139,15 +139,17 @@ class Task(abc.ABC):
         raise RuntimeError
 
     @staticmethod
-    def collect(vault_dirs: list[PosixPath]) -> list[Task]:
-        """Find all tasks in all vaults."""
+    def collect(vault_dirs: list[PosixPath], update_dates: bool) -> list[Task]:
+        """Find all tasks in all vaults. Update deadlines if required."""
         logger = logging.getLogger(__name__)
         tasks: list[Task] = []
+        today = date.today()
 
         num_lines = 0
         for v_note in VNote.collect_iter(vault_dirs=vault_dirs, exclude_trash=True):
-            with open(v_note.note_path, "r", encoding="utf8") as note_fd:
-                note_lines = note_fd.readlines()
+            note_tasks_outdated: list[Task] = []
+            note_text = v_note.note_path.read_text(encoding="utf8")
+            note_lines = note_text.splitlines(keepends=True)
             in_code_block = False
             for line_num, note_line in enumerate(note_lines, start=1):
                 if note_line.startswith("```"):
@@ -157,9 +159,44 @@ class Task(abc.ABC):
                     for task in Task._parse_line(
                         note_line=note_line, v_note=v_note, line_num=line_num
                     ):
-                        tasks.append(task)
+                        if task.deadline >= today:
+                            tasks.append(task)
+                        else:
+                            note_tasks_outdated.append(task)
+                            if update_dates:
+                                task = copy.copy(task)
+                                task.deadline = today
+                            tasks.append(task)
                         logger.debug("%s", task)
-        logger.debug("Checked %d lines, collected %d tasks", num_lines, len(tasks))
+
+            # Update task dates in this note if necessary.
+            if note_tasks_outdated:
+                # Report outdated tasks regardless the value of update_dates.
+                deadline_updated = "#" + today.isoformat()
+                logger.warning("Some task deadlines need updating: '%s'.", v_note.note_path.name)
+                for task_outdated in note_tasks_outdated:
+                    deadline_outdated = "#" + task_outdated.deadline.isoformat()
+                    note_line_task = note_lines[task_outdated.line_num - 1]
+                    assert deadline_outdated in note_line_task
+                    note_lines[task_outdated.line_num - 1] = note_line_task.replace(
+                        deadline_outdated, deadline_updated
+                    )
+                    logger.warning(
+                        "\t%s -> %s in '%s'",
+                        deadline_outdated,
+                        deadline_updated,
+                        task_outdated.descr,
+                    )
+                note_text_updated = "".join(note_lines)
+                assert len(note_text) == len(note_text_updated), (
+                    f"Updated note size differs: {len(note_text)} ≠ {len(note_text_updated)}."
+                )
+                assert note_text != note_text_updated, "Note text was not updated."
+                if update_dates:
+                    v_note.note_path.write_text(note_text_updated, encoding="utf8")
+                    logger.warning("\tUpdated.")
+
+        logger.info("Checked %d lines, collected %d tasks.", num_lines, len(tasks))
 
         return tasks
 
