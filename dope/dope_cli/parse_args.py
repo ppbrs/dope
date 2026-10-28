@@ -9,11 +9,9 @@ from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.pomodoro import Pomodoro
 from dope.dope_cli.task_tracker import TaskTracker
 
-_logger = logging.getLogger(__name__)
-
 
 def parse_args() -> dict[str, Any]:
-    """Parse and check command line arguments."""
+    """Configure, parse, and check command line arguments."""
     parser = argparse.ArgumentParser(description="""Command-line interface to all vaults.""")
 
     #
@@ -31,8 +29,21 @@ def parse_args() -> dict[str, Any]:
             "whose names include these tokens."
         ),
     )
-    parser.add_argument(
-        "-d", "--debug", dest="debug", action="store_true", help="Show all diagnostic messages."
+
+    logger_group = parser.add_argument_group(
+        title="Show diagnostic messages", description="Default is WARNING level and higher."
+    )
+    logger_group.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        help="DEBUG level and higher.",
+    )
+    logger_group.add_argument(
+        "--info",
+        dest="info",
+        action="store_true",
+        help="INFO level and higher.",
     )
 
     #
@@ -107,6 +118,11 @@ def parse_args() -> dict[str, Any]:
 
     args = parser.parse_args().__dict__
 
+    if args["info"]:
+        logging.getLogger().setLevel(logging.INFO)
+    if args["debug"]:
+        logging.getLogger().setLevel(logging.DEBUG)
+
     # Sanity check
     vault_filter: None | list[str] = args["vault"]
     assert vault_filter is None or (
@@ -126,5 +142,7 @@ def parse_args() -> dict[str, Any]:
         assert not empty, (
             f"Error in the vault filter ({vault_filter}). No such vaults found in ({vault_names})."
         )
+
+    TaskTracker.check_arguments(parser=parser, args=args)
 
     return args

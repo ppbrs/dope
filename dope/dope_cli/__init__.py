@@ -36,10 +36,11 @@ def dope_cli() -> int:
         os.system("clear")
 
         args = parse_args()
-        if args["debug"]:
-            _logger.setLevel(logging.DEBUG)
+        # Note: User-defined logging level is valid from here on.
 
-        _logger.info("Raw arguments: %s", args)
+        _logger.info("Raw arguments:")
+        for line in pformat(args).split("\n"):
+            _logger.info(line)
 
         _logger.info("Package directory: %s", pathlib.PosixPath(__file__).parent)
 

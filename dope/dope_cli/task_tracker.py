@@ -83,6 +83,22 @@ class TaskTracker:
             ),
         )
 
+    @staticmethod
+    def check_arguments(parser: argparse.ArgumentParser, args: dict[str, Any]) -> None:
+        is_tasks_cmd = (
+            args["tasks_next"] is not None
+            or args["tasks_wait"] is not None
+            or args["tasks_now"] is not None
+            or args["tasks_all"] is not None
+        )
+        error_msg_ending = (
+            "requires either -t/--tasks or -x/--next or -n/--now or -w/--wait to be provided."
+        )
+        if "priorities" in args and not is_tasks_cmd:
+            parser.error(f"Argument -p/--priorities {error_msg_ending}")
+        if "show_future_tasks" in args and not is_tasks_cmd:
+            parser.error(f"Argument -f/--show-future-tasks {error_msg_ending}")
+
     __slots__ = (
         "tasks_next",
         "tasks_wait",
@@ -252,13 +268,13 @@ class TaskTracker:
             tasks_path = vault_dir / "TASKS.md"
             existed = tasks_path.exists()
             if not existed:
-                _logger.info("Creating '%s'.", tasks_path)
+                _logger.debug("Creating '%s'.", tasks_path)
                 tasks_path.touch()
             else:
-                _logger.info("'%s' already exists", tasks_path)
+                _logger.debug("'%s' already exists", tasks_path)
 
             text_orig: list[str] = tasks_path.read_text().splitlines()
-            _logger.info("%d lines", len(text_orig))
+            _logger.debug("%d lines", len(text_orig))
 
             text_new: list[str] = []
 

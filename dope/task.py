@@ -158,7 +158,7 @@ class Task(abc.ABC):
                         note_line=note_line, v_note=v_note, line_num=line_num
                     ):
                         tasks.append(task)
-                        logger.info("%s", task)
+                        logger.debug("%s", task)
         logger.debug("Checked %d lines, collected %d tasks", num_lines, len(tasks))
 
         return tasks
@@ -206,6 +206,7 @@ class TaskWait(Task):
 
     def get_type_string(self) -> str:
         return "Wait"
+
 
 class TaskNow(Task):
     """Encapsulates all information about a current action."""
