@@ -6,6 +6,7 @@ from typing import Any
 
 from dope.config import get_vault_paths
 from dope.dope_cli.edu_tracker import EduTracker
+from dope.dope_cli.git_helper import GitHelper
 from dope.dope_cli.pomodoro import Pomodoro
 from dope.dope_cli.task_tracker import TaskTracker
 
@@ -115,6 +116,7 @@ def parse_args() -> dict[str, Any]:
     EduTracker.add_arguments(parser=parser)
     TaskTracker.add_arguments(parser=parser)
     Pomodoro.add_arguments(parser=parser)
+    GitHelper.add_arguments(parser=parser)
 
     args = parser.parse_args().__dict__
 
