@@ -12,6 +12,7 @@ from dope.config import get_config, get_vault_paths
 from dope.dope_cli.check_list import process_check_list
 from dope.dope_cli.config import process_config_arguments
 from dope.dope_cli.edu_tracker import EduTracker
+from dope.dope_cli.git_helper import GitHelper
 from dope.dope_cli.parse_args import parse_args
 from dope.dope_cli.pomodoro import Pomodoro
 from dope.dope_cli.rover_sync import RoverSync
@@ -65,6 +66,7 @@ def dope_cli() -> int:
         ret_val += Vector.process(args=args)
         ret_val += process_config_arguments(args=args)
         ret_val += process_check_list(args=args)
+        ret_val += GitHelper.process(args=args)
 
         return ret_val
     except KeyboardInterrupt:
