@@ -59,14 +59,6 @@ def parse_args() -> dict[str, Any]:
         help=("Open the vaults in IDE. Supported parameters: `code`. "),
     )
     parser.add_argument(
-        "-r",
-        "--rover",
-        dest="rover",
-        choices=["dry", "wet"],  # The result is None or "dry" or "wet".
-        action="store",
-        help="Synchronize with my smartphone; parameters are `dry` or `wet`.",
-    )
-    parser.add_argument(
         "--test",
         dest="test",
         action="store_true",

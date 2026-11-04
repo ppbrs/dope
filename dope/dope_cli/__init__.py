@@ -15,7 +15,6 @@ from dope.dope_cli.edu_tracker import EduTracker
 from dope.dope_cli.git_helper import GitHelper
 from dope.dope_cli.parse_args import parse_args
 from dope.dope_cli.pomodoro import Pomodoro
-from dope.dope_cli.rover_sync import RoverSync
 from dope.dope_cli.task_tracker import TaskTracker
 from dope.dope_cli.vault_utils import VaultUtils
 from dope.dope_cli.vector import Vector
@@ -62,7 +61,6 @@ def dope_cli() -> int:
         ret_val += EduTracker().process(args=args)
         ret_val += VaultUtils.process(args=args)
         ret_val += Pomodoro.process(args=args)
-        ret_val += RoverSync.process(args=args)
         ret_val += Vector.process(args=args)
         ret_val += process_config_arguments(args=args)
         ret_val += process_check_list(args=args)
