@@ -26,9 +26,18 @@ class TaskTracker:
 
         This method is expected to run before parser.parse_args() is invoked.
         """
-        task_group = parser.add_argument_group("Task tracker")
+        task_group = parser.add_argument_group(
+            title="Task tracker",
+            description=(
+                "Any task-related command will overwrite TASKS.md "
+                "with all types and priorities of tasks."
+            ),
+        )
 
-        optional_keywords_help = "If keywords are given, only tasks that contain them in note title or task description will be shown."
+        optional_keywords_help = (
+            "If keywords are given, only tasks that contain them in note title or task description "
+            "will be shown."
+        )
         task_group.add_argument(
             "-x",
             "--next",
@@ -144,32 +153,40 @@ class TaskTracker:
             return 0
 
         vault_dirs = get_vault_paths(filter=args["vault"])
-        return self.process_method(
-            tasks=Task.collect(vault_dirs=vault_dirs, update_dates=args["update_dates"])
-        )
-
-    def process_method(self, tasks: list[Task]) -> int:
-        """Filter and print."""
-
-        tasks = self._filter_by_type(tasks=tasks)
-        _logger.debug("Filtered %d tasks by type.", len(tasks))
-
-        tasks = self._filter_by_priority(tasks=tasks)
-        _logger.debug("Filtered %d tasks by priority.", len(tasks))
-
-        tasks = self._filter_by_due_date(tasks=tasks)
-        _logger.debug("Filtered %d tasks by due date.", len(tasks))
-
-        # Sort them.
-        def sort_func(task: Task) -> tuple[int, int, int]:
-            return (task.get_days_to_dealine(), task.SORTING_PRECEDENCE, task.priority)
-
-        tasks = sorted(tasks, key=sort_func, reverse=True)
-
-        self._print_tasks(tasks)
-
-        self._write_tasks(tasks)
+        tasks_all = Task.collect(vault_dirs=vault_dirs, update_dates=args["update_dates"])
+        self.process_method_print(tasks_all=tasks_all)
+        self.process_method_write_tasks_md(tasks_all=tasks_all)
         return 1
+
+    @staticmethod
+    def sort_func(task: Task) -> tuple[int, int, int]:
+        """Sort so that the most important is the last (on the bottom)."""
+        return (task.get_days_to_dealine(), task.SORTING_PRECEDENCE, task.priority)
+
+    def process_method_print(self, tasks_all: list[Task]) -> None:
+        """Filter, sort and print."""
+
+        tasks_filtered = self._filter_by_type(tasks=tasks_all)
+        _logger.debug("Filtered %d tasks by type.", len(tasks_filtered))
+
+        tasks_filtered = self._filter_by_priority(tasks=tasks_filtered)
+        _logger.debug("Filtered %d tasks by priority.", len(tasks_filtered))
+
+        tasks_filtered = self._filter_by_due_date(tasks=tasks_filtered)
+        _logger.debug("Filtered %d tasks by due date.", len(tasks_filtered))
+
+        tasks_filtered_sorted = sorted(tasks_filtered, key=self.sort_func, reverse=True)
+
+        self._print_tasks(tasks_filtered_sorted)
+
+    def process_method_write_tasks_md(self, tasks_all: list[Task]) -> None:
+        """Write to TASKS.md."""
+
+        tasks_due = self._filter_by_due_date(tasks=tasks_all)
+
+        tasks_due_sorted = sorted(tasks_due, key=self.sort_func, reverse=True)
+
+        self._write_tasks_md(tasks_due_sorted)
 
     def _filter_by_type(self, tasks: list[Task]) -> list[Task]:
         """Filter tasks by type."""
@@ -266,7 +283,7 @@ class TaskTracker:
             print(f"\t{task.descr}\n\n", end="")
 
     @staticmethod
-    def _write_tasks(tasks: list[Task]) -> None:
+    def _write_tasks_md(tasks: list[Task]) -> None:
         """Write to TASKS.md for each vault that contains tasks."""
         vaults: dict[str, pathlib.PosixPath] = {}
         for task in tasks:
@@ -293,6 +310,7 @@ class TaskTracker:
             text_new.append(f"Updated {dt_str}")
 
             last_written_task_type: str | None = None
+            last_written_task_priority: int | None = None
             for task in reversed(tasks):
                 if task.vault != vault_name:
                     continue
@@ -308,9 +326,12 @@ class TaskTracker:
 
                 note_rel_path = task.note_rel_path.replace(" ", "%20")
 
+                # Insert separators.
                 if type(task).__name__ != last_written_task_type:
                     text_new.append("***")
                     text_new.append(f"# {task.get_type_string().upper()}\n")
+                elif task.priority != last_written_task_priority:
+                    text_new.append("***")
 
                 text_new.append(
                     f"**{task.get_type_priority_short_string()}** {deadline_str}\n"
@@ -320,6 +341,7 @@ class TaskTracker:
                 )
 
                 last_written_task_type = type(task).__name__
+                last_written_task_priority = task.priority
 
             text_new.append("***\n")
 
