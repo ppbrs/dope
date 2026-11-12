@@ -5,6 +5,7 @@ dope_cli submodule
 import logging
 import os
 import pathlib
+import random
 import sys
 from pprint import pformat
 
@@ -65,6 +66,11 @@ def dope_cli() -> int:
         ret_val += process_config_arguments(args=args)
         ret_val += process_check_list(args=args)
         ret_val += GitHelper.process(args=args)
+
+        if (rnd_max := args["rnd"]) is not None:
+            assert isinstance(rnd_max, int)
+            assert rnd_max > 0
+            print(f"RND[0, {rnd_max}]: {random.randint(0, rnd_max)}")
 
         return ret_val
     except KeyboardInterrupt:

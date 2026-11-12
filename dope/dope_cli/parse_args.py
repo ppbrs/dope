@@ -95,6 +95,11 @@ def parse_args() -> dict[str, Any]:
         action="store",
         help=("Open the config with the provided editor."),
     )
+    parser.add_argument(
+        "--rnd",
+        type=int,
+        help=("Random number."),
+    )
 
     #
     # --
